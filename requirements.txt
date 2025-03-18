@@ -1,0 +1,5 @@
+dotenv
+requests
+discord==2.3.2
+yt_dlp
+PyNaCl
