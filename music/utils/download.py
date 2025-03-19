@@ -33,7 +33,7 @@ def download_audio(url):
             'channel_url': info['channel_url']
         }
     
-def search_and_download(keyword):
+def search_yotube(keyword):
     def postApi(pl):
         added_payload = {'query': pl} 
 
@@ -97,5 +97,5 @@ def search_and_download(keyword):
 
 if __name__ == '__main__':
     # asyncio.run(download_audio('https://www.youtube.com/watch?v=Jv3zvWZlXkk'))
-    # print((search_and_download('五月天')))
+    # print((search_yotube('五月天')))
     print(download_audio('https://youtu.be/d9ktAt-Gg2k?si=CIYG-A35KogrtH-4'))

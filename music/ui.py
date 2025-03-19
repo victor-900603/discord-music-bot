@@ -1,7 +1,7 @@
 from discord.ui import View, Button
 from discord import Embed
 import discord
-from music.utils.download import search_and_download, download_audio
+from music.utils.download import search_yotube, download_audio
 import asyncio
 from music.playlist import Playlist
 
@@ -63,12 +63,14 @@ class SearchView(View):
         self.keyword = keyword
         self.playlist = playlist
         self.cog = cog
-        self.results = search_and_download(self.keyword)
+        self.results = search_yotube(self.keyword)
 
         self.page_size = 5
         self.total_page = (len(self.results) + self.page_size - 1) // self.page_size
 
         self.current_page = 0
+        self.start_index = self.current_page * self.page_size
+        self.page_results = []
         self.update_page_results()
 
         for i in range(1, self.page_size + 1):

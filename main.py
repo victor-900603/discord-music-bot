@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from music import GuildPlaylistsManager, Music_bot
+from music import GuildPlaylistsManager, MusicCog
 from dotenv import load_dotenv
 
 import json
@@ -23,20 +23,20 @@ async def sync_commands():
 
 @bot.event
 async def on_ready():
-  game = discord.Game("Playing a game", type=1) 
+  game = discord.Game("我", type=1) 
   await bot.change_presence(status=discord.Status.online, activity=game)
   print('BOT is online')
   await sync_commands()
 
 @bot.command()
 async def reload_music(ctx):
-  await bot.remove_cog('Music_bot')
+  await bot.remove_cog('MusicCog')
   await load_music()
   await ctx.send(f'Re-Loaded player done.')
   await sync_commands()
   
 async def load_music():
-  await bot.add_cog(Music_bot(bot, playlist_manager))
+  await bot.add_cog(MusicCog(bot, playlist_manager))
 
 async def main():
   await load_music()
