@@ -1,9 +1,9 @@
 from discord.ui import View, Button
 from discord import Embed
 import discord
-from music.utils.download import search_yotube, download_audio
+from utils.download import search_yotube, download_audio
 import asyncio
-from music.playlist import Playlist
+from utils.playlist import Playlist
 
 class QueueView(View):
     def __init__(self, songs, current_index):

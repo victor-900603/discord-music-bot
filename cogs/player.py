@@ -1,12 +1,14 @@
 import asyncio
+
 import discord
 from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 from discord import VoiceClient, VoiceProtocol, Interaction
-from music.playlist import Playlist, GuildPlaylistsManager
-from music.ui import QueueView, SearchView
-from music.utils.download import download_audio, search_yotube
+
+from utils.playlist import Playlist, GuildPlaylistsManager
+from utils.download import download_audio, search_yotube
+from cogs.views import QueueView, SearchView
 
 
 class MusicCog(commands.Cog):
