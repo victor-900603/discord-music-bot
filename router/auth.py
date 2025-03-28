@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import status
-from utils.auth import decode_token
+from utils.auth_token import decode_token
 from utils.dependencies import check_session
 
 router = APIRouter()

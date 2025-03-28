@@ -3,7 +3,7 @@ from discord import Embed
 import discord
 from utils.download import search_yotube, download_audio
 import asyncio
-from utils.playlist import Playlist
+from utils.playing_list import Playlist
 
 class QueueView(View):
     def __init__(self, songs, current_index):

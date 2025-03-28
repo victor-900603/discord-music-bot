@@ -2,12 +2,12 @@ import discord
 from discord.ext import commands
 
 from cogs import MusicCog
-from utils.playlist import GuildPlaylistsManager
+from utils.playing_list import GuildPlaylistsManager
 
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
-from router.auth import router as auth_router
+from router import auth_router
 
 import json
 import os, sys, time

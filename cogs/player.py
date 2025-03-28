@@ -8,9 +8,9 @@ from discord.app_commands import Choice
 from discord.ext import commands
 from discord import VoiceClient, VoiceProtocol, Interaction
 
-from utils.playlist import Playlist, GuildPlaylistsManager
+from utils.playing_list import Playlist, GuildPlaylistsManager
 from utils.download import download_audio, search_yotube
-from utils.auth import generate_token
+from utils.auth_token import generate_token
 from cogs.views import QueueView, SearchView
 
 load_dotenv()
