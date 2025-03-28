@@ -58,12 +58,12 @@ class QueueView(View):
     
     
 class SearchView(View):
-    def __init__(self, keyword: str, playlist: Playlist, cog):
+    def __init__(self, keyword: str, playlist: Playlist, cog, results):
         super().__init__()
         self.keyword = keyword
         self.playlist = playlist
         self.cog = cog
-        self.results = search_yotube(self.keyword)
+        self.results = results
 
         self.page_size = 5
         self.total_page = (len(self.results) + self.page_size - 1) // self.page_size
@@ -88,6 +88,11 @@ class SearchView(View):
 
         self.update_navigation_buttons()
         
+    @classmethod
+    async def create(cls, keyword: str, playlist: Playlist, cog):
+        results = await search_yotube(keyword)
+        return cls(keyword, playlist, cog, results)
+        
     async def on_timeout(self):
         if self.message:
             try:
@@ -110,7 +115,7 @@ class SearchView(View):
         index = int(interaction.data['custom_id']) - 1
         item = self.page_results[index]
         song_url = "https://www.youtube.com/watch?v=" + item['videoId']
-        song_info = download_audio(song_url)
+        song_info = await download_audio(song_url)
         self.playlist.add_song(song_info)
         
         await interaction.followup.send(f'點播 {song_info["title"]}')

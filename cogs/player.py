@@ -37,7 +37,8 @@ class MusicCog(commands.Cog):
         
     @app_commands.command(name = "test", description = "test")
     async def test(self, interaction: Interaction):
-        print([x for x in self.bot.get_all_channels()])
+        await interaction.response.send_message("test")
+
     
     @app_commands.command(name = 'join')
     async def join(self, interaction: Interaction):
@@ -90,7 +91,7 @@ class MusicCog(commands.Cog):
             await self.play_by_keyword(song, interaction, voice_client, playlist, choose)
 
     async def play_by_url(self, song_url: str, interaction: Interaction, voice_client: VoiceClient, playlist: Playlist):
-        song_info = download_audio(song_url)
+        song_info = await download_audio(song_url)
         playlist.add_song(song_info)
         await interaction.followup.send(f'點播 {song_info["title"]}')
         
@@ -99,11 +100,12 @@ class MusicCog(commands.Cog):
     
     async def play_by_keyword(self, keyword: str, interaction: Interaction, voice_client: VoiceClient, playlist: Playlist, choose: int):
         if not choose:
-            song = search_yotube(keyword)[0]
+            result = await search_yotube(keyword)
+            song = result[0]
             song_url = "https://www.youtube.com/watch?v=" + song['videoId']
             await self.play_by_url(song_url, interaction, voice_client, playlist)
         else:
-            view = SearchView(keyword, playlist, self)
+            view = await SearchView.create(keyword, playlist, self)
             embed = view.create_embed()
             msg = await interaction.followup.send(embed=embed, view=view)
             view.message = msg
