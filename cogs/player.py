@@ -1,4 +1,6 @@
 import asyncio
+from dotenv import load_dotenv
+import os
 
 import discord
 from discord import app_commands
@@ -8,8 +10,11 @@ from discord import VoiceClient, VoiceProtocol, Interaction
 
 from utils.playlist import Playlist, GuildPlaylistsManager
 from utils.download import download_audio, search_yotube
+from utils.auth import generate_token
 from cogs.views import QueueView, SearchView
 
+load_dotenv()
+MANAGER_USER_ID = int(os.getenv("MANAGER_USER_ID"))
 
 class MusicCog(commands.Cog):
     def __init__(self, bot: commands.Bot,  playlist_manager: GuildPlaylistsManager, *args, **kwargs):
@@ -19,6 +24,8 @@ class MusicCog(commands.Cog):
 
     async def check_user_voice(self, interaction: discord.Interaction):
         """ 檢查使用者是否在語音頻道 """
+        if interaction.user.id == MANAGER_USER_ID:
+            return True
         if not interaction.user.voice or not interaction.user.voice.channel:
             await interaction.response.send_message("❌ 你需要先加入語音頻道才能使用這個指令！", ephemeral=True)
             return False
@@ -233,3 +240,13 @@ class MusicCog(commands.Cog):
             playlist.clear()
             voice_client.stop()
             await voice_client.disconnect()
+
+
+    @app_commands.command(name = "web", description = "web")
+    async def web(self, interaction: Interaction):
+        if not await self.check_user_voice(interaction):
+            return
+        
+        token = generate_token(interaction.guild_id, interaction.channel_id, interaction.user.id)
+        url = f"http://localhost:8000/auth/set/?token={token}"
+        await interaction.response.send_message(url, ephemeral=True, delete_after=30)
