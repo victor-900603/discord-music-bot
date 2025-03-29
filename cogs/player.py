@@ -24,8 +24,8 @@ class MusicCog(commands.Cog):
 
     async def check_user_voice(self, interaction: discord.Interaction):
         """ 檢查使用者是否在語音頻道 """
-        if interaction.user.id == MANAGER_USER_ID:
-            return True
+        # if interaction.user.id == MANAGER_USER_ID:
+        #     return True
         if not interaction.user.voice or not interaction.user.voice.channel:
             await interaction.response.send_message("❌ 你需要先加入語音頻道才能使用這個指令！", ephemeral=True)
             return False
@@ -169,12 +169,12 @@ class MusicCog(commands.Cog):
         await interaction.response.send_message('跳過歌曲')
     
     @app_commands.command(name = "skipto", description = "跳至指定歌曲")
-    async def skipto(self, interaction: Interaction, index: int):
+    async def skipto(self, interaction: Interaction, number: int):
         if not await self.check_user_voice(interaction):
             return
         
         playlist = self.playlist_manager.get_playlist(interaction.guild_id)
-        song = playlist.skip_to(index-1)
+        song = playlist.skip_to(number-1)
         if song:
             voice_client = interaction.guild.voice_client
             if voice_client and voice_client.is_playing():
@@ -182,12 +182,12 @@ class MusicCog(commands.Cog):
             await interaction.response.send_message(f'跳至-> {song["title"]} <-')
 
     @app_commands.command(name = "remove", description = "刪除曲目")
-    async def remove(self, interaction: Interaction, index: int):
+    async def remove(self, interaction: Interaction, number: int):
         if not await self.check_user_voice(interaction):
             return
         
         playlist = self.playlist_manager.get_playlist(interaction.guild_id)
-        song = playlist.remove_song(index-1)
+        song = playlist.remove_song(number-1)
         if song:
             await interaction.response.send_message(f'刪除-> {song["title"]} <-成功')
 
@@ -196,8 +196,7 @@ class MusicCog(commands.Cog):
         if not await self.check_user_voice(interaction):
             return
         
-        playlist = self.playlist_manager.get_playlist(interaction.guild_id)
-        playlist.clear()
+        self.playlist_manager.clear_playlist(interaction.guild_id)
         await interaction.response.send_message(f'清空曲目')
     
     @app_commands.command(name = "loop", description = "循環播放")
@@ -236,12 +235,13 @@ class MusicCog(commands.Cog):
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before, after):
         voice_client = discord.utils.get(self.bot.voice_clients, guild=member.guild)
-        
         if voice_client and len(voice_client.channel.members) == 1:
-            playlist = self.playlist_manager.get_playlist(member.guild.id)
-            playlist.clear()
-            voice_client.stop()
-            await voice_client.disconnect()
+            await asyncio.sleep(60)
+            voice_client = discord.utils.get(self.bot.voice_clients, guild=member.guild)
+            if voice_client and len(voice_client.channel.members) == 1:
+                self.playlist_manager.remove_guild(member.guild.id)
+                voice_client.stop()
+                await voice_client.disconnect()
 
 
     @app_commands.command(name = "web", description = "web")
