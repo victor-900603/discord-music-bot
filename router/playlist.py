@@ -1,12 +1,74 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import status
 
+from utils.dependencies import check_session
+from utils.playing_list import GuildPlaylistsManager, Playlist
+from utils.download import download_audio
 
-route = APIRouter()
+router = APIRouter()
 
-@route.get("/")
-async def play(request: Request, guild_id: str, playlist_name: str):
-    """
-    Play a playlist in the guild.
-    """
+@router.get("/add")
+async def add(request: Request, id: str, dependencies= Depends(check_session)):
+    try:
+        playlist: Playlist = request.app.state.playlist_manager.get_playlist(request.session["guild_id"], request.session.get("channel_id"))
+
+        url = f'https://www.youtube.com/watch?v={id}'
+        song_info = await download_audio(url)
+        playlist.add_song(song_info)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            # detail=str(e)
+        )
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={
+            "message": "Song added to playlist",
+            "title": song_info["title"],
+        }
+    )
+    
+@router.get("/get")
+async def get(request: Request, dependencies= Depends(check_session)):
+    try:
+        playlist: Playlist = request.app.state.playlist_manager.get_playlist(request.session["guild_id"], request.session.get("channel_id"))
+        songs, current_index = playlist.view_playlist()
+        songs = list(map(lambda song: {
+            "title": song["title"],
+            "webpage_url": song["webpage_url"],
+            "thumbnail": song["thumbnail"],
+            "channel": song["channel"],
+        }, songs))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return JSONResponse(   
+        status_code=status.HTTP_200_OK,
+        content={
+            "songs": songs,
+            "current_index": current_index,
+        }
+    )
+    
+@router.get("/remove")
+async def remove(request: Request, index: int, dependencies= Depends(check_session)):
+    try:
+        playlist: Playlist = request.app.state.playlist_manager.get_playlist(request.session["guild_id"], request.session.get("channel_id"))
+        song = playlist.remove_song(index)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return JSONResponse(   
+        status_code=status.HTTP_200_OK,
+        content={
+            "message": "Song removed from playlist",
+            "title": song["title"],
+        }
+    )
+# TODO: check if the user is in the voice channel
+
