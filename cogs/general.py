@@ -18,6 +18,11 @@ class BotEvents(commands.Cog):
         await self.bot.change_presence(status=discord.Status.online, activity=game)
         print('BOT is online')
         await self.sync_commands()
+        
+    @commands.command()
+    async def latency(self, ctx):
+        latency = round(self.bot.latency * 1000, 2)
+        await ctx.send(f'Latency: {latency}ms')
 
     # @commands.command()
     # async def reload_music(self, ctx):

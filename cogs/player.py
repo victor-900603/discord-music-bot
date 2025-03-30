@@ -31,12 +31,30 @@ class MusicCog(commands.Cog):
             return False
         return True
     
+    async def get_voice_client(self, interaction: discord.Interaction):
+        """ 獲取語音客戶端 """
+        playlisyt = self.playlist_manager.get_playlist(interaction.guild_id, interaction.channel_id)
+        if interaction.guild.voice_client is None:
+            voice_channel = interaction.user.voice.channel
+            voice_client = await voice_channel.connect(self_deaf=True)
+        else:
+            voice_client = interaction.guild.voice_client
+            
+        playlisyt.voice_client = voice_client
+        return voice_client
+    
     @app_commands.command(name = "hello", description = "Hello, world!")
     async def hello(self, interaction: Interaction):
         await interaction.response.send_message("Hello, world!")
         
     @app_commands.command(name = "test", description = "test")
     async def test(self, interaction: Interaction):
+        playlisyt = self.playlist_manager.get_playlist(interaction.guild_id, interaction.channel_id)
+        voice_client = await self.get_voice_client(interaction)
+        
+        print(interaction.guild.voice_client.channel)
+        print(playlisyt.voice_client.channel)
+        print([x.channel for x in self.bot.voice_clients])
         await interaction.response.send_message("test")
 
     
@@ -46,12 +64,12 @@ class MusicCog(commands.Cog):
             return
         
         voice_channel = interaction.user.voice.channel
-        if interaction.guild.voice_client is None:
-            await voice_channel.connect(self_deaf=True)
-            await interaction.response.send_message('連接至語音！')
-        else:
-            await interaction.guild.voice_client.move_to(voice_channel)
-            await interaction.response.defer()
+        
+        voice_client = await self.get_voice_client(interaction)
+        if voice_client.channel != voice_channel:
+            await voice_client.move_to(voice_channel)
+            
+        await interaction.response.send_message('連接至語音！')
         
     @app_commands.command(name = "leave", description = "leave")
     async def leave(self, interaction: Interaction):
@@ -60,9 +78,8 @@ class MusicCog(commands.Cog):
 
         if interaction.guild.voice_client:
             await interaction.guild.voice_client.disconnect()
-            await interaction.response.send_message('中斷連接！')
-        else:
-            await interaction.response.defer()
+
+        await interaction.response.send_message('中斷連接！')
             
     @app_commands.command(name = "play", description = "播放歌曲")
     @app_commands.describe(song = '輸入 YouTube 網址或關鍵字', choose = '選擇搜尋結果')
@@ -75,15 +92,11 @@ class MusicCog(commands.Cog):
     async def play(self, interaction: Interaction, song: str, choose: Choice[int]=0):
         if not await self.check_user_voice(interaction):
             return
-        
-        if interaction.guild.voice_client is None:
-            voice_channel = interaction.user.voice.channel
-            voice_client = await voice_channel.connect(self_deaf=True)
-        else:
-            voice_client = interaction.guild.voice_client
+        await interaction.response.defer()
+
         
         playlist = self.playlist_manager.get_playlist(interaction.guild_id, interaction.channel_id)
-        await interaction.response.defer()
+        voice_client = await self.get_voice_client(interaction)
         
         if song.startswith('http'):
             await self.play_by_url(song, interaction, voice_client, playlist)
@@ -113,8 +126,7 @@ class MusicCog(commands.Cog):
     
     async def play_next(self, voice_client: VoiceClient, playlist: Playlist):
         FFMPEG_OPTIONS = {
-            'before_options':
-            '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
         }
         
@@ -199,7 +211,7 @@ class MusicCog(commands.Cog):
         self.playlist_manager.clear_playlist(interaction.guild_id)
         await interaction.response.send_message(f'清空曲目')
     
-    @app_commands.command(name = "loop", description = "循環播放")
+    @app_commands.command(name = "loop", description = "循環播放、再次播放")
     async def loop(self, interaction: Interaction):
         if not await self.check_user_voice(interaction):
             return
@@ -207,6 +219,11 @@ class MusicCog(commands.Cog):
         playlist = self.playlist_manager.get_playlist(interaction.guild_id)
         loop = not playlist.loop_queue
         playlist.loop_queue = loop
+        
+        if loop:
+            voice_client = self.get_voice_client(interaction)
+            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
+                self.bot.loop.create_task(self.play_next(voice_client, playlist))
         await interaction.response.send_message(f'循環播放: {loop}')
         
     @app_commands.command(name = "info", description = "當前曲目")
@@ -248,7 +265,7 @@ class MusicCog(commands.Cog):
     async def web(self, interaction: Interaction):
         if not await self.check_user_voice(interaction):
             return
-        
+        voice_client = await self.get_voice_client(interaction)
         token = generate_token(interaction.guild_id, interaction.channel_id, interaction.user.id)
         url = f"http://localhost:8000/auth/set/?token={token}"
         await interaction.response.send_message(url, ephemeral=True, delete_after=30)

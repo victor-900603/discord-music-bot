@@ -1,11 +1,13 @@
-from discord import VoiceClient
+from discord import VoiceClient, VoiceProtocol
+from typing import Union
 
 class Playlist:
-    def __init__(self, channel_id: str):
+    def __init__(self, channel_id: str, voice_client: Union[VoiceClient, VoiceProtocol] = None):
         self.songs = []
         self.channel_id = channel_id
         self.loop_queue = False
         self.current_index = -1 # 第 {current_index + 1} 首歌
+        self.voice_client: VoiceClient = None 
 
     def add_song(self, song: dict):
         self.songs.append(song)
