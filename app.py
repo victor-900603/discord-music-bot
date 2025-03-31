@@ -6,8 +6,10 @@ from utils.playing_list import GuildPlaylistsManager
 
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.cors import CORSMiddleware
+
 import uvicorn
-from router import auth_router, search_router, playlist_router
+from router import auth_router, search_router, playlist_router, playback_router
 
 import json
 import os, sys, time
@@ -38,9 +40,17 @@ def bot_server():
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key='')
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"], 
+#     allow_credentials=True,
+#     allow_methods=["*"], 
+#     allow_headers=["*"], 
+# )
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(search_router, prefix="/search", tags=["search"])
 app.include_router(playlist_router, prefix="/playlist", tags=["playlist"])
+app.include_router(playback_router, prefix="/playback", tags=["playback"])
 def api_server():
     app.state.bot = bot
     app.state.playlist_manager = playlist_manager

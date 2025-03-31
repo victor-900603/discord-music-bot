@@ -2,17 +2,15 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import status
 
-from utils.dependencies import check_session
+from utils.dependencies import check_session, get_user_voice_channel, get_playlist
 from utils.playing_list import GuildPlaylistsManager, Playlist
 from utils.download import download_audio
 
 router = APIRouter()
 
 @router.get("/add")
-async def add(request: Request, id: str, dependencies= Depends(check_session)):
+async def add(request: Request, id: str, playlist= Depends(get_playlist)):
     try:
-        playlist: Playlist = request.app.state.playlist_manager.get_playlist(request.session["guild_id"], request.session.get("channel_id"))
-
         url = f'https://www.youtube.com/watch?v={id}'
         song_info = await download_audio(url)
         playlist.add_song(song_info)
@@ -30,9 +28,8 @@ async def add(request: Request, id: str, dependencies= Depends(check_session)):
     )
     
 @router.get("/get")
-async def get(request: Request, dependencies= Depends(check_session)):
+async def get(request: Request, playlist= Depends(get_playlist)):
     try:
-        playlist: Playlist = request.app.state.playlist_manager.get_playlist(request.session["guild_id"], request.session.get("channel_id"))
         songs, current_index = playlist.view_playlist()
         songs = list(map(lambda song: {
             "title": song["title"],
@@ -54,9 +51,8 @@ async def get(request: Request, dependencies= Depends(check_session)):
     )
     
 @router.get("/remove")
-async def remove(request: Request, index: int, dependencies= Depends(check_session)):
+async def remove(request: Request, index: int, playlist= Depends(get_playlist)):
     try:
-        playlist: Playlist = request.app.state.playlist_manager.get_playlist(request.session["guild_id"], request.session.get("channel_id"))
         song = playlist.remove_song(index)
     except Exception as e:
         raise HTTPException(

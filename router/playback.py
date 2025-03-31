@@ -1,0 +1,98 @@
+from fastapi import APIRouter, Request, Depends, HTTPException, Cookie
+from fastapi.responses import JSONResponse
+from fastapi import status
+
+from fastapi.websockets import WebSocketDisconnect, WebSocket, WebSocketState
+from fastapi.exceptions import HTTPException, WebSocketException
+
+import discord
+from discord import VoiceChannel
+from discord.ext.commands import Bot
+import asyncio
+from utils.playback import play_song, pause_song, resume_song, skip_song
+from utils.dependencies import check_session, get_user_voice_channel, get_playlist
+from utils.playing_list import GuildPlaylistsManager, Playlist
+
+
+router = APIRouter()
+
+@router.websocket("/")
+async def playbakc_ws(websocket: WebSocket, playlist: Playlist=Depends(get_playlist)):
+    await websocket.accept()
+    try:
+        while True:            
+            songs, current_index = playlist.view_playlist()
+            songs = list(map(lambda song: {
+                "title": song["title"],
+                "webpage_url": song["webpage_url"],
+                "thumbnail": song["thumbnail"],
+                "channel": song["channel"],
+            }, songs))
+            data = {
+                "is_playing": playlist.voice_client.is_playing(),
+                "songs": songs,
+                "current_index": current_index,
+            }
+            await websocket.send_json(data)
+            await asyncio.sleep(1)
+    except WebSocketDisconnect  as e:
+        pass
+    except Exception as e:
+        print(f"WebSocket error: {str(e)}")
+        await websocket.close()
+    finally:
+        pass
+    
+
+@router.get("/play")
+async def play(request: Request, playlist: Playlist=Depends(get_playlist)):
+    try:
+        bot: Bot = request.app.state.bot
+        if not playlist.voice_client.is_playing() and not playlist.voice_client.is_paused():
+            play_song(bot, playlist.voice_client, playlist)
+        elif playlist.voice_client.is_paused():
+            resume_song(playlist.voice_client)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Playing song",
+                "title": playlist.songs[playlist.current_index]["title"],
+            }
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+@router.get("/pause")
+async def pause(request: Request, playlist: Playlist=Depends(get_playlist)):
+    try:
+        pause_song(playlist.voice_client)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Paused song",
+            }
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+        
+@router.get("/skip")
+async def skip(request: Request, playlist: Playlist=Depends(get_playlist)):
+    try:
+        skip_song(playlist.voice_client)
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Skipped song",
+            }
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

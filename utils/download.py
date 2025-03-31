@@ -101,5 +101,5 @@ async def search_yotube(keyword):
     return data
 
 if __name__ == '__main__':
-    # asyncio.run(download_audio('https://www.youtube.com/watch?v=Jv3zvWZlXkk'))
-    print(asyncio.run(search_yotube('五月天')))
+    print(asyncio.run(download_audio('https://www.youtube.com/watch?v=Jv3zvWZlXkk')))
+    # print(asyncio.run(search_yotube('五月天')))
