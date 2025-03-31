@@ -66,5 +66,3 @@ async def remove(request: Request, index: int, playlist= Depends(get_playlist)):
             "title": song["title"],
         }
     )
-# TODO: check if the user is in the voice channel
-

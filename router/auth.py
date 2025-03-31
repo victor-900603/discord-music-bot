@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import status
+
+from discord.ext.commands import Bot
 from utils.auth_token import decode_token
 from utils.dependencies import check_session
 
@@ -14,18 +16,31 @@ async def auth(request: Request, token: str):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
         )
-
     request.session.update(user_info)
+    bot: Bot = request.app.state.bot
+    guild = bot.get_guild(request.session["guild_id"])
+    user = guild.get_member(request.session["user_id"])
+
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content={"message": "Session is set"}
+        content={
+            "message": "Session is set",
+            'user': user.name,
+            'guild': guild.name,
+        }
     )
 
 @router.get("/get")
 async def get(request: Request, dependencies= Depends(check_session)):
+    bot: Bot = request.app.state.bot
+    guild = bot.get_guild(request.session["guild_id"])
+    user = guild.get_member(request.session["user_id"])
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=request.session
+        content={
+            'user': user.name,
+            'guild': guild.name,
+        }
     )
 
 @router.get("/delete")

@@ -1,5 +1,10 @@
 dotenv
 requests
-discord==2.3.2
+discord
 yt_dlp
 PyNaCl
+websockets
+fastapi
+uvicorn
+itsdangerous
+pyjwt
