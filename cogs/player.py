@@ -8,6 +8,7 @@ from discord.app_commands import Choice
 from discord.ext import commands
 from discord import VoiceClient, VoiceProtocol, Interaction
 
+from utils.playback import play_song, pause_song, resume_song, skip_song
 from utils.playing_list import Playlist, GuildPlaylistsManager
 from utils.download import download_audio, search_yotube
 from utils.auth_token import generate_token
@@ -108,8 +109,7 @@ class MusicCog(commands.Cog):
         playlist.add_song(song_info)
         await interaction.followup.send(f'點播 {song_info["title"]}')
         
-        if not voice_client.is_playing() and not voice_client.is_paused():
-            self.bot.loop.create_task(self.play_next(voice_client, playlist))
+        play_song(self.bot, voice_client, playlist)
     
     async def play_by_keyword(self, keyword: str, interaction: Interaction, voice_client: VoiceClient, playlist: Playlist, choose: int):
         if not choose:
@@ -118,34 +118,10 @@ class MusicCog(commands.Cog):
             song_url = "https://www.youtube.com/watch?v=" + song['videoId']
             await self.play_by_url(song_url, interaction, voice_client, playlist)
         else:
-            view = await SearchView.create(keyword, playlist, self)
+            view = await SearchView.create(keyword, playlist)
             embed = view.create_embed()
             msg = await interaction.followup.send(embed=embed, view=view)
             view.message = msg
-
-    
-    async def play_next(self, voice_client: VoiceClient, playlist: Playlist):
-        FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-            'options': '-vn'
-        }
-        
-        song = playlist.next_song()
-        if song:
-            source = await discord.FFmpegOpusAudio.from_probe(song['source'], **FFMPEG_OPTIONS)
-            embed = discord.Embed(title=song['title'], url=song['webpage_url'])
-            embed.set_author(name=song['channel'], url=song['channel_url'])
-            embed.set_thumbnail(url=song['thumbnail'])
-            await self.bot.get_channel(playlist.channel_id).send(embed=embed)
-            
-            voice_client.play(source, after=lambda e: self.play_after(voice_client, playlist))
-        else:
-            await asyncio.sleep(30)
-            if not voice_client.is_playing() and voice_client.is_connected():
-                await voice_client.disconnect()
-            
-    def play_after(self, voice_client: VoiceClient, playlist: Playlist):
-        self.bot.loop.create_task(self.play_next(voice_client, playlist))
     
     
     @app_commands.command(name = "pause", description = "暫停播放")
@@ -154,8 +130,7 @@ class MusicCog(commands.Cog):
             return
         
         voice_client = interaction.guild.voice_client
-        if voice_client and voice_client.is_playing():
-            voice_client.pause()
+        pause_song(voice_client)
             
         await interaction.response.send_message('暫停播放')
     
@@ -165,8 +140,12 @@ class MusicCog(commands.Cog):
             return
         
         voice_client = interaction.guild.voice_client
-        if voice_client and voice_client.is_paused():
-            voice_client.resume()
+        if not voice_client.is_playing() and not voice_client.is_paused():
+            playlist = self.playlist_manager.get_playlist(interaction.guild_id, interaction.channel_id)
+            play_song(self.bot, voice_client, playlist)
+        elif voice_client.is_paused():
+            resume_song(voice_client)
+        resume_song(voice_client)
             
         await interaction.response.send_message('回復播放')
         
@@ -176,8 +155,7 @@ class MusicCog(commands.Cog):
             return
         
         voice_client = interaction.guild.voice_client
-        if voice_client and voice_client.is_playing():
-            voice_client.stop()
+        skip_song(voice_client)
         await interaction.response.send_message('跳過歌曲')
     
     @app_commands.command(name = "skipto", description = "跳至指定歌曲")
@@ -221,9 +199,8 @@ class MusicCog(commands.Cog):
         playlist.loop_queue = loop
         
         if loop:
-            voice_client = self.get_voice_client(interaction)
-            if voice_client and not voice_client.is_playing() and not voice_client.is_paused():
-                self.bot.loop.create_task(self.play_next(voice_client, playlist))
+            voice_client = await self.get_voice_client(interaction)
+            play_song(self.bot, voice_client, playlist)
         await interaction.response.send_message(f'循環播放: {loop}')
         
     @app_commands.command(name = "info", description = "當前曲目")

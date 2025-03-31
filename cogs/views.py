@@ -2,7 +2,7 @@ from discord.ui import View, Button
 from discord import Embed
 import discord
 from utils.download import search_yotube, download_audio
-import asyncio
+from utils.playback import play_song
 from utils.playing_list import Playlist
 
 class QueueView(View):
@@ -58,11 +58,10 @@ class QueueView(View):
     
     
 class SearchView(View):
-    def __init__(self, keyword: str, playlist: Playlist, cog, results):
+    def __init__(self, keyword: str, playlist: Playlist, results):
         super().__init__()
         self.keyword = keyword
         self.playlist = playlist
-        self.cog = cog
         self.results = results
 
         self.page_size = 5
@@ -89,9 +88,9 @@ class SearchView(View):
         self.update_navigation_buttons()
         
     @classmethod
-    async def create(cls, keyword: str, playlist: Playlist, cog):
+    async def create(cls, keyword: str, playlist: Playlist):
         results = await search_yotube(keyword)
-        return cls(keyword, playlist, cog, results)
+        return cls(keyword, playlist, results)
         
     async def on_timeout(self):
         if self.message:
@@ -126,8 +125,7 @@ class SearchView(View):
         else:
             voice_client = interaction.guild.voice_client
             
-        if not voice_client.is_playing() and not voice_client.is_paused():
-            self.cog.bot.loop.create_task(self.cog.play_next(voice_client, self.playlist))
+        play_song(interaction.client, voice_client, self.playlist)
 
     async def previous_page(self, interaction: discord.Interaction):
         if self.current_page > 0:
