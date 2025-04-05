@@ -53,6 +53,7 @@ async def play(request: Request, playlist: Playlist=Depends(get_playlist)):
     try:
         bot: Bot = request.app.state.bot
         if not playlist.voice_client.is_playing() and not playlist.voice_client.is_paused():
+            if playlist.is_end(): playlist.reset_index()
             play_song(bot, playlist.voice_client, playlist)
         elif playlist.voice_client.is_paused():
             resume_song(playlist.voice_client)
@@ -94,7 +95,16 @@ async def skipto(request: Request, index:int, playlist: Playlist=Depends(get_pla
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid index"
             )
-        skip_song(playlist.voice_client)
+        
+        bot: Bot = request.app.state.bot
+        if not playlist.voice_client.is_playing() and not playlist.voice_client.is_paused():
+            play_song(bot, playlist.voice_client, playlist)
+        elif playlist.voice_client.is_paused():
+            resume_song(playlist.voice_client)
+            skip_song(playlist.voice_client)
+        else:
+            skip_song(playlist.voice_client)
+            
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={

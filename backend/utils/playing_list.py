@@ -23,20 +23,25 @@ class Playlist:
         
     def next_song(self):
         if not self.is_empty():
-            if self.current_index + 1 >= len(self.songs):
+            if self.is_end():
                 if self.loop_queue: 
-                    self.current_index = 0
+                    self.reset_index()
                 else:
                     return None
-            else:
-                self.current_index += 1
+            self.current_index += 1
             song = self.songs[self.current_index]
             return song
         return None
+    
+    def is_end(self):
+        return self.current_index + 1 >= len(self.songs)
 
     def is_empty(self):
         return len(self.songs) == 0
 
+    def reset_index(self):
+        self.current_index = -1
+        
     def clear(self):
         self.songs.clear()
         self.current_index = 0
