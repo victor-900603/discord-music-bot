@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 
 
 
@@ -7,29 +7,45 @@ const PlaybackContext = createContext();
 export function PlaybackProvider({ children }) {
     const [playing, setPlaying] = useState(false);
     const [loop, setLoop] = useState(false);
-    const [playlist, setPlaylist] = useState([
-        {
-            title: '任性 (電視劇《難哄》主題曲)',
-            channel: '五月天 (Mayday)',
-            thumbnail: 'https://i.ytimg.com/vi/d9ktAt-Gg2k/hq720.jpg'
-        },
-        {
-            title: 'MAYDAY 五月天 [ 擁抱 Embrace ] Official Live Video',
-            channel: '相信音樂BinMusic',
-            thumbnail: 'https://i.ytimg.com/vi/rS8HqJy1UPs/hq720.jpg'
-        },
-        {
-            title: 'MAYDAY五月天 [ 為你寫下這首情歌 Song for You ] Official Music Video',
-            channel: '五月天 (Mayday)',
-            thumbnail: 'https://i.ytimg.com/vi/V9sWPHGbESM/hq720.jpg'
-        }
-    ]);
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [playlist, setPlaylist] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(-1);
     const [currentSong, setCurrentSong] = useState({
-        title: '任性 (電視劇《難哄》主題曲)',
-        channel: '五月天 (Mayday)',
-        thumbnail: 'https://i.ytimg.com/vi/d9ktAt-Gg2k/hq720.jpg'
+        title: "",
+        thumbnail: "/src/assets/thumbnail.png",
+        channel: "",
     })
+
+
+    useEffect(() => {
+        const ws = new WebSocket("ws://localhost:8000/playback/");
+        ws.onopen = () => console.log("WebSocket 連線成功");
+    
+        ws.onmessage = (event) => {
+            const receivedData = JSON.parse(event.data);
+            const { is_playing, loop, songs, current_index } = receivedData;
+
+            setPlaying(is_playing);
+            setLoop(loop);
+            setPlaylist(songs);
+            setCurrentIndex(current_index);
+            setCurrentSong(songs[current_index]);
+            if (songs[current_index]) {
+                setCurrentSong(songs[current_index]);
+            } else {
+                setCurrentSong({
+                    title: "",
+                    thumbnail: "/src/assets/thumbnail.png",
+                    channel: "",
+                });
+            }
+            
+        };
+    
+        ws.onerror = (error) => console.error("WebSocket 錯誤:", error);
+        ws.onclose = () => console.log("WebSocket 連線關閉");
+    
+        // return () => ws.close();
+      }, []);
   
     return (
         <PlaybackContext.Provider 
