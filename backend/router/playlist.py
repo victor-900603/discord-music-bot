@@ -47,6 +47,7 @@ async def get(request: Request, playlist= Depends(get_playlist)):
         content={
             "songs": songs,
             "current_index": current_index,
+            "loop": playlist.loop_queue,
         }
     )
     

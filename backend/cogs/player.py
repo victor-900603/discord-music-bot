@@ -139,7 +139,7 @@ class MusicCog(commands.Cog):
         if not await self.check_user_voice(interaction):
             return
         
-        voice_client = interaction.guild.voice_client
+        voice_client = await self.get_voice_client(interaction)
         if not voice_client.is_playing() and not voice_client.is_paused():
             playlist = self.playlist_manager.get_playlist(interaction.guild_id, interaction.channel_id)
             play_song(self.bot, voice_client, playlist)

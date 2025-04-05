@@ -20,6 +20,7 @@ router = APIRouter()
 async def playbakc_ws(websocket: WebSocket, playlist: Playlist=Depends(get_playlist)):
     await websocket.accept()
     try:
+        prev_data = None
         while True:            
             songs, current_index = playlist.view_playlist()
             songs = list(map(lambda song: {
@@ -34,7 +35,9 @@ async def playbakc_ws(websocket: WebSocket, playlist: Playlist=Depends(get_playl
                 "current_index": current_index,
                 "loop": playlist.loop_queue,
             }
-            await websocket.send_json(data)
+            if data != prev_data:
+                await websocket.send_json(data)
+                prev_data = data
             await asyncio.sleep(1)
     except WebSocketDisconnect  as e:
         pass
@@ -82,14 +85,21 @@ async def pause(request: Request, playlist: Playlist=Depends(get_playlist)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.get("/skip")
-async def skip(request: Request, playlist: Playlist=Depends(get_playlist)):
+@router.get("/skipto")
+async def skipto(request: Request, index:int, playlist: Playlist=Depends(get_playlist)):
     try:
+        song = playlist.skip_to(index)
+        if song is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid index"
+            )
         skip_song(playlist.voice_client)
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
                 "message": "Skipped song",
+                "title": song["title"],
             }
         )
     except Exception as e:
@@ -97,3 +107,21 @@ async def skip(request: Request, playlist: Playlist=Depends(get_playlist)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
+        
+@router.get("/loop")
+async def loop(request: Request, playlist: Playlist=Depends(get_playlist)):
+    try:
+        playlist.loop_queue = not playlist.loop_queue
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Looping song",
+                "loop": playlist.loop_queue,
+            }
+        )
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+        
