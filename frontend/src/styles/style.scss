@@ -1,0 +1,31 @@
+@use '_variables' as *;
+@import url("https://fonts.googleapis.com/css?family=Lato:400,600");
+
+* {
+    box-sizing: border-box;
+}
+body {
+    @include theme($dark-bg-1, $dark-bg-2, $dark-bg-3, $dark-bg-4, $dark-text-1, $dark-text-2, $dark-text-3, $dark-text-4);
+    background-color: var(--bg-1);
+    color: var(--text-1);
+    font-size: 16px;
+    height: 100vh;
+    transition: background 0.3s ease-in-out;
+
+    margin: 0;
+    // display: flex;
+    place-items: center;
+    min-width: 320px;
+    min-height: 100vh;
+
+    padding-top: 5rem;
+    position: relative;
+    overflow: hidden;
+
+}
+
+
+button {
+    border: none;
+    cursor: pointer;
+}
