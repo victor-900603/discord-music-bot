@@ -32,6 +32,7 @@ async def playbakc_ws(websocket: WebSocket, playlist: Playlist=Depends(get_playl
                 "is_playing": playlist.voice_client.is_playing(),
                 "songs": songs,
                 "current_index": current_index,
+                "loop": playlist.loop_queue,
             }
             await websocket.send_json(data)
             await asyncio.sleep(1)
