@@ -9,6 +9,7 @@ import { PlaybackProvider } from './context/PlaybackContext';
 import Header from './pages/header';
 import Footer from './pages/footer'
 import FooterExpand from './pages/footerExpand';
+import SearchPage from './pages/searchPage';
 
 
 
@@ -18,9 +19,17 @@ const App = () => {
 
     return (
         <PlaybackProvider>
-            <Header />
-            <Footer expand={expand} setExpand={setExpand} />
-            <FooterExpand expand={expand} setExpand={setExpand} />
+            <Router>
+                <Header />
+
+                <Routes>
+                    <Route path='/search/:keyword' element={<SearchPage />}  />
+                    <Route path='/test' element={<Link to="/search">PAGE2</Link>}  />
+                </Routes>
+
+                <Footer expand={expand} setExpand={setExpand} />
+                <FooterExpand expand={expand} setExpand={setExpand} />
+            </Router>
         </PlaybackProvider>
     )
 }

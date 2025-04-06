@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react'
 import * as Icon from 'react-feather';
-import '../styles/footer.scss'
+import '../styles/main.scss'
 import axiosInstance from '../utils/axiosInstance';
 
 import PlaybackContext from '../context/PlaybackContext';

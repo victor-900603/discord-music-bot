@@ -5,7 +5,7 @@
     box-sizing: border-box;
 }
 body {
-    @include theme($dark-bg-1, $dark-bg-2, $dark-bg-3, $dark-bg-4, $dark-text-1, $dark-text-2, $dark-text-3, $dark-text-4);
+    @include theme($dark-bg-0, $dark-bg-1, $dark-bg-2, $dark-bg-3, $dark-bg-4, $dark-text-0, $dark-text-1, $dark-text-2, $dark-text-3, $dark-text-4);
     background-color: var(--bg-1);
     color: var(--text-1);
     font-size: 16px;
@@ -28,4 +28,14 @@ body {
 button {
     border: none;
     cursor: pointer;
+}
+
+.page {
+    width: 80%;
+    margin: 0 auto;
+    padding: 1rem;
+
+    height: calc(100vh - $header-height - $footer-height);
+
+
 }

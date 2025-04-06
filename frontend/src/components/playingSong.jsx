@@ -12,8 +12,10 @@ const PlayingSong = () => {
     const currentRotation = useRef(0);
       
     function rotateImage() {
-        currentRotation.current += 1;
-        rotatingImage.current.style.transform = `rotate(${currentRotation.current}deg)`;
+        if (rotatingImage.current) {
+            currentRotation.current += 1;
+            rotatingImage.current.style.transform = `rotate(${currentRotation.current}deg)`;
+        }
     }
 
     useEffect(() => {
@@ -22,6 +24,9 @@ const PlayingSong = () => {
         } else {
             clearInterval(rotationInterval.current);
         }
+        return () => {
+            clearInterval(rotationInterval.current);
+        };
     }, [playing]);
 
     return (

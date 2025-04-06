@@ -1,3 +1,4 @@
+$dark-bg-0: #000000;
 $dark-bg-1: #1c2125;
 $dark-bg-2: #383b3e;
 $dark-bg-3: #555656;
@@ -6,12 +7,18 @@ $dark-text-4: #8e8b88;
 $dark-text-3: #aaa5a1;
 $dark-text-2: #c7c0b9;
 $dark-text-1: #e3dad2;
+$dark-text-0: #ffffff;
 
-@mixin theme($bg-1, $bg-2, $bg-3, $bg-4, $text-1, $text-2, $text-3, $text-4) {
+$header-height: 5rem;
+$footer-height: 7rem;
+
+@mixin theme($bg-0, $bg-1, $bg-2, $bg-3, $bg-4, $text-0, $text-1, $text-2, $text-3, $text-4) {
+    --bg-0: #{$bg-0}; 
     --bg-1: #{$bg-1}; 
     --bg-2: #{$bg-2};
     --bg-3: #{$bg-3};
     --bg-4: #{$bg-4};
+    --text-0: #{$text-0};
     --text-1: #{$text-1};
     --text-2: #{$text-2};
     --text-3: #{$text-3};
