@@ -36,7 +36,7 @@ const PlayingSong = () => {
                 <span className="point"></span>
             </div>
             <div className='song-info'>
-                <h2>{title}</h2>
+                <h2 title={title}>{title}</h2>
                 <p>{channel}</p>
             </div>
         </div>
