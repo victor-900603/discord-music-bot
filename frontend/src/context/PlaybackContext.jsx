@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 
 
 const PlaybackContext = createContext();
@@ -15,6 +15,7 @@ export function PlaybackProvider({ children }) {
         channel: "",
     })
 
+    const navigate = useNavigate();
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:8000/playback/");
@@ -41,7 +42,10 @@ export function PlaybackProvider({ children }) {
             
         };
     
-        ws.onerror = (error) => console.error("WebSocket 錯誤:", error);
+        ws.onerror = (error) => {
+            console.error("WebSocket 錯誤:", error);
+            navigate('/error/404');
+        };
         ws.onclose = () => console.log("WebSocket 連線關閉");
     
         // return () => ws.close();

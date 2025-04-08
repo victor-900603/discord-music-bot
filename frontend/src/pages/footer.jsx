@@ -23,7 +23,7 @@ const Controller = () => {
             
             
         } catch (error) {
-            console.error('Error toggling play/pause:', error);
+            // console.error('Error toggling play/pause:', error);
         }
     }
 

@@ -88,3 +88,18 @@
     }
 
 }
+
+.error-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    img {
+        width: 25rem;
+        aspect-ratio: 1/1;
+        
+    }
+    h1 {
+        font-size: 2rem;
+    }
+}

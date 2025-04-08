@@ -19,22 +19,32 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-axiosInstance.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        if (error.response) {
-            console.error('Response error:', error.response.data);
-            if (error.response.status === 401) {
-                console.log();
+
+export const setInterceptor = (axiosInstance, navigate) => {
+    axiosInstance.interceptors.response.use(
+        (response) => {
+            return response;
+        },
+        (error) => {
+            if (error.response) {
+                console.error('Response error:', error.response.data);
+                const { status } = error.response;
+                if (status === 401) {
+                    navigate('/error/401', { replace: true });
+                } else if (status === 404) {
+                    navigate('/error/404', { replace: true });
+                } else if (status === 500) {
+                    alert('Server error, please try again later.');
+                }
+            } else if (error.request) {
+                console.error('No response received:', error.request);
+            } else {
+                console.error('Error setting up the request:', error.message);
             }
-        } else if (error.request) {
-            console.error('No response received:', error.request);
-        } else {
-            console.error('Error setting up the request:', error.message);
+            return Promise.reject(error); 
         }
-        return Promise.reject(error); 
-    }
-);
+    );
+}
+
+
 export default axiosInstance;
