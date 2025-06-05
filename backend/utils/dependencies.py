@@ -25,7 +25,10 @@ async def get_user_voice_channel(websocket: WebSocket= None, request: Request= N
     voice_state = guild.get_member(user_id).voice if guild else None
     voice_channel = voice_state.channel if voice_state else None
     if not voice_channel:
-        raise HTTPException(status_code=404, detail="請先加入語音頻道")
+        session = websocket.session if websocket else request.session
+        session.clear()
+
+        raise HTTPException(status_code=404, detail="請先加入語音頻道並重新連接")
 
 
     return voice_channel
