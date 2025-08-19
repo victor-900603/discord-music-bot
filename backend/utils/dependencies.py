@@ -1,15 +1,16 @@
-from fastapi import HTTPException, WebSocketException, Request, status, WebSocket, Depends
+from fastapi import HTTPException, Request, WebSocket, Depends
 import asyncio
-import discord.utils
+import discord
 from discord.ext.commands import Bot
-from utils.playing_list import GuildPlaylistsManager, Playlist
-from typing import Union
+from utils.playing_list import Playlist
 
 async def check_session(websocket: WebSocket= None, request: Request= None) -> dict:
     session = websocket.session if websocket else request.session
+    
     guild_id = session.get("guild_id")
     channel_id = session.get("channel_id")
     user_id = session.get("user_id")
+    
     if not guild_id or not channel_id or not user_id:
         raise HTTPException(status_code=401, detail="Session values missing")
 
@@ -21,17 +22,18 @@ async def get_user_voice_channel(websocket: WebSocket= None, request: Request= N
     user_id = session.get("user_id")
 
     bot: Bot = app.state.bot
-    guild = bot.get_guild(guild_id)
-    voice_state = guild.get_member(user_id).voice if guild else None
-    voice_channel = voice_state.channel if voice_state else None
-    if not voice_channel:
-        session = websocket.session if websocket else request.session
-        session.clear()
-
+    guild = bot.get_guild(session["guild_id"])
+    if not guild:
+        raise HTTPException(status_code=404, detail="找不到伺服器")
+    
+    member = guild.get_member(session["user_id"])
+    if not member or not member.voice:
+        session.pop("guild_id", None)
+        session.pop("channel_id", None)
+        session.pop("user_id", None)
         raise HTTPException(status_code=404, detail="請先加入語音頻道並重新連接")
 
-
-    return voice_channel
+    return member.voice.channel
 
 async def get_playlist(websocket: WebSocket= None, request: Request= None, voice_channel= Depends(get_user_voice_channel), session= Depends(check_session)) -> Playlist:
     app = websocket.app if websocket else request.app

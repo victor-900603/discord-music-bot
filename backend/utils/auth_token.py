@@ -24,11 +24,7 @@ def decode_token(token):
             "user_id": info["user_id"]
         }
         return user_info
-    except jwt.ExpiredSignatureError:
-        return None
-    except jwt.InvalidTokenError:
-        return None
-    except KeyError:
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError):
         return None
 
 if __name__ == "__main__":
