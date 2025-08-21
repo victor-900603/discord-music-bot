@@ -3,7 +3,7 @@ from typing import Union, List, Optional, Tuple, Dict, Any
 
 class Playlist:
     def __init__(self, channel_id: str, voice_client: Union[VoiceClient, VoiceProtocol] = None):
-        self.songs = List[Dict] = []
+        self.songs: List[Dict] = []
         self.channel_id = channel_id
         self.loop_queue: bool = False
         self.current_index:int = -1 # 第 {current_index + 1} 首歌

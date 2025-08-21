@@ -44,8 +44,7 @@ async def get_playlist(websocket: WebSocket= None, request: Request= None, voice
     bot: Bot = app.state.bot
     guild = bot.get_guild(guild_id)
     if guild.voice_client is None:
-        future = asyncio.run_coroutine_threadsafe(voice_channel.connect(self_deaf=True), bot.loop)
-        voice_client = future.result()
+        voice_client = await voice_channel.connect(self_deaf=True)
     else:
         voice_client = guild.voice_client
 
