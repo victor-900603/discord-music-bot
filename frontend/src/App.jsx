@@ -10,6 +10,7 @@ import FooterExpand from './pages/footerExpand';
 import HomePage from './pages/homePage';
 import SearchPage from './pages/searchPage';
 import ErrorPage from './pages/errorPage';
+import FavoritePage from './pages/favoritePage';
 
 
 
@@ -24,7 +25,7 @@ const App = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await axiosInstance.get('/auth/get');
+                const response = await axiosInstance.get('/auth');
                 setUserInfo(response.data);
                 console.log(response.data);
             } catch (error) {
@@ -42,6 +43,7 @@ const App = () => {
                 <Route path='/' element={<HomePage />}  />
                 <Route path='/search/:keyword' element={<SearchPage />}  />
                 <Route path='/error/:code' element={<ErrorPage />}  />
+                <Route path='/favorite/:id' element={<FavoritePage />}  />
                 <Route path='*' element={<Navigate to={'/'} />}  />
             </Routes>
 

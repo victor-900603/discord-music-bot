@@ -34,7 +34,7 @@ const Song = ({index, song, current}) => {
 
     const handleRemove = async (index) => {
         try {
-            const response = await axiosInstance.get(`/playlist/remove?index=${index}`);
+            const response = await axiosInstance.delete(`/playlist?index=${index}`);
             console.log(response.data);
         } catch (error) {
             console.error('Error removing song:', error);

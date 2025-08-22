@@ -9,11 +9,13 @@ export function PlaybackProvider({ children }) {
     const [loop, setLoop] = useState(false);
     const [playlist, setPlaylist] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(-1);
-    const [currentSong, setCurrentSong] = useState({
+
+    const defaultSong = {
         title: "",
-        thumbnail: "/src/assets/thumbnail.png",
+        thumbnail: "/src/assets/disc.webp",
         channel: "",
-    })
+    };
+    const [currentSong, setCurrentSong] = useState(defaultSong);
 
     const navigate = useNavigate();
 
@@ -33,11 +35,7 @@ export function PlaybackProvider({ children }) {
             if (songs[current_index]) {
                 setCurrentSong(songs[current_index]);
             } else {
-                setCurrentSong({
-                    title: "",
-                    thumbnail: "/src/assets/thumbnail.png",
-                    channel: "",
-                });
+                setCurrentSong(defaultSong);
             }
             
         };
