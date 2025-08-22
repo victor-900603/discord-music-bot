@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react'
 import * as Icon from 'react-feather';
 import '../styles/main.scss'
-import axiosInstance from '../utils/axiosInstance';
 
+import { pause, play, skiptoIndex, toggleLoop } from '../api/playback';
 import PlaybackContext from '../context/PlaybackContext';
 import PlayingSong from '../components/playingSong';
 
@@ -12,51 +12,25 @@ const Controller = () => {
 
 
     const handlePlayPause = async () => {
-        try {
-            if (playing) {
-                const response = await axiosInstance.get('/playback/pause');
-                console.log(response.data);
-            } else {
-                const response = await axiosInstance.get('/playback/play');
-                console.log(response.data);
-            }
-            
-            
-        } catch (error) {
-            // console.error('Error toggling play/pause:', error);
-        }
-    }
-
-    const handleSkipto = async (index) => {
-        try {
-            const response = await axiosInstance.get(`/playback/skipto?index=${index}`);
-            console.log(response.data);
-        } catch (error) {
-            console.error('Error skipping to song:', error);
-        }
-    }
-
-    const handleLoop = async () => {
-        try {
-            const response = await axiosInstance.get('/playback/loop');
-            console.log(response.data);
-        } catch (error) {
-            console.error('Error toggling loop:', error);
+        if (playing) {
+            await pause();
+        } else {
+            await play();
         }
     }
 
     return (
         <div className="controller">
-            <button className='skip-btn' disabled={(currentIndex <= 0)? true: false} onClick={handleSkipto.bind(null, currentIndex - 1)}>
+            <button className='skip-btn' disabled={(currentIndex <= 0)? true: false} onClick={() => skiptoIndex(currentIndex - 1)}>
                 {<Icon.SkipBack />}
             </button>
             <button className='play-btn' onClick={handlePlayPause}>
                 {playing ? <Icon.Pause /> : <Icon.Play />}
             </button>
-            <button className='skip-btn' disabled={(currentIndex + 1 >= playlist.length)? true: false} onClick={handleSkipto.bind(null, currentIndex + 1)}>
+            <button className='skip-btn' disabled={(currentIndex + 1 >= playlist.length)? true: false} onClick={() => skiptoIndex(currentIndex + 1)}>
                 {<Icon.SkipForward />}
             </button>
-            <button className='loop-btn' onClick={handleLoop}>
+            <button className='loop-btn' onClick={() => toggleLoop()}>
                 {<Icon.Repeat className={loop? 'active': ''} />}
             </button>
         </div>

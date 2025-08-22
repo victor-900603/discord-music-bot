@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext } from 'react'
 import  { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import axiosInstance, {setInterceptor} from './utils/axiosInstance';
+import { getAuth } from './api/auth';
 import './App.css'
 import './styles/style.scss'
 
@@ -24,12 +25,10 @@ const App = () => {
 
     useEffect(() => {
         const fetchUser = async () => {
-            try {
-                const response = await axiosInstance.get('/auth');
-                setUserInfo(response.data);
-                console.log(response.data);
-            } catch (error) {
-                console.error('Error fetching data:', error);
+            const data = await getAuth();
+            if (data) {
+                setUserInfo(data);
+                console.log(data);
             }
         };
         fetchUser();

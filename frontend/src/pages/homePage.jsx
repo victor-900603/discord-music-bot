@@ -2,22 +2,16 @@ import React, {useState, useEffect, useRef} from "react";
 import * as Icon from 'react-feather';
 import '../styles/page.scss'
 
-import axiosInstance from '../utils/axiosInstance';
+import { addFavorite, getFavorites } from "../api/favorite";
 import Modal from "../components/modal";
 
 
 const AddFavoriteModal = ({isOpen, onClose}) => {
     const [name, setName] = useState("");
     const handleAddFavorite = async () => {
-        try {
-            const resp = await axiosInstance.post('/favorites?name=' + name);
-            window.location.reload();
-        } catch (error) {
-            console.error('Error adding favorite:', error);
-        }
+        await addFavorite(name);
+        window.location.reload();
     }
-
-
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} >
@@ -50,11 +44,9 @@ const FavoritesGallery = () => {
     const [favorites, setFavorites] = useState([]);
     useEffect(() => {
         const fetchFavorites = async () => {
-            try {
-                const resp = await axiosInstance.get('/favorites');
-                setFavorites(resp.data.result);
-            } catch (error) {
-                console.error('Error fetching favorites:', error);
+            const data = await getFavorites();
+            if (data) {
+                setFavorites(data.result);
             }
         }
         fetchFavorites();

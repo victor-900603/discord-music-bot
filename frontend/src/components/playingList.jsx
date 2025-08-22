@@ -1,9 +1,9 @@
 import React, { useEffect, useContext, useRef, useState } from 'react'
 import * as Icon from 'react-feather';
 
-import axiosInstance from '../utils/axiosInstance';
 import PlaybackContext from '../context/PlaybackContext';
-
+import { skiptoIndex } from '../api/playback';
+import { removeFromPlaylist } from '../api/playlist';
 
 const Song = ({index, song, current}) => {
     const [open, setOpen] = useState(false)
@@ -23,25 +23,9 @@ const Song = ({index, song, current}) => {
     }, [])
 
     const handleSkipto = async (index) => {
-        try {
-            setOpen(false);
-            const response = await axiosInstance.get(`/playback/skipto?index=${index}`);
-            console.log(response.data);
-        } catch (error) {
-            console.error('Error skipping to song:', error);
-        }
+        setOpen(false);
+        await skiptoIndex(index);
     }
-
-    const handleRemove = async (index) => {
-        try {
-            const response = await axiosInstance.delete(`/playlist?index=${index}`);
-            console.log(response.data);
-        } catch (error) {
-            console.error('Error removing song:', error);
-        }
-    }
-
-
 
     return (
         <li className={current? 'song current' : 'song'} ref={menuRef}>
@@ -69,7 +53,7 @@ const Song = ({index, song, current}) => {
                         <Icon.Heart /> 
                         <span>收藏</span>
                     </div>
-                    <div className="option delete-btn" onClick={handleRemove.bind(null, index)}>
+                    <div className="option delete-btn" onClick={() => removeFromPlaylist(index)}>
                         <Icon.Trash /> 
                         <span>刪除</span>
                     </div>

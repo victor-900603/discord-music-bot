@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import Modal from '../components/modal';
 import * as Icon from 'react-feather';
 import '../styles/page.scss'
-import axiosInstance from '../utils/axiosInstance';
 
+import { getFavorites, addToFavorite } from '../api/favorite';
+import { addToPlaylist } from '../api/playlist';
+import { searchYouTube } from '../api/other';
 
 const AddToFavoriteModal = ({isOpen, onClose, song}) => {
     if (!isOpen) return null;
@@ -14,12 +16,10 @@ const AddToFavoriteModal = ({isOpen, onClose, song}) => {
 
     useEffect(() => {
         const fetchFavorites = async () => {
-            try {
-                const resp = await axiosInstance.get('/favorites');
-                setFavorites(resp.data.result);
-                setSelectedFavoriteId(resp.data.result[0]?._id || null);
-            } catch (error) {
-                console.error('Error fetching favorites:', error);
+            const data = await getFavorites();
+            if (data) {
+                setFavorites(data.result);
+                setSelectedFavoriteId(data.result[0]?._id || null);
             }
         }
         fetchFavorites();
@@ -27,19 +27,10 @@ const AddToFavoriteModal = ({isOpen, onClose, song}) => {
 
 
     const handleAddToFavorite = async () => {
-        try {
-            const response = await axiosInstance.post(`/favorites/${selectedFavoriteId}/song`,{
-                id: song.videoId,
-                title: song.title,
-                channel: song.channel,
-                thumbnail: song.thumbnail
-            })
-            onClose();
-        } catch (error) {
-            console.error('Error AddToFavorite:', error);
-            
-        }
+        await addToFavorite(song, selectedFavoriteId);
+        onClose();
     }
+
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <h2 className="modal-title">新增至收藏</h2>
@@ -60,15 +51,6 @@ const SearchItem = ({ song }) => {
     const { videoId, title, thumbnail, length, channel } = song;
     const [isOpen, setIsOpen] = useState(false);
 
-    const handleAddToPlaylist = async (id) => {
-        try {
-            const response = await axiosInstance.post('/playlist?id=' + id);
-            console.log(response.data);
-        } catch (error) {
-            console.error('Error AddToPlaylist:', error);
-        }
-    }
-
     return (
         <li className='search-item'>
             <div className='search-item-content'>
@@ -80,7 +62,7 @@ const SearchItem = ({ song }) => {
                 </div>
             </div>
             <div className='search-item-action'>
-                <div className="action play-action" onClick={() => handleAddToPlaylist(videoId)}>
+                <div className="action play-action" onClick={() => addToPlaylist(videoId, 'song')}>
                     <Icon.PlusCircle />
                 </div>
                 <div className="action favorite-action" onClick={() => setIsOpen(true)}>
@@ -108,12 +90,9 @@ const SearchPage = () => {
 
     useEffect(() => {
         const fetchSearchResults = async () => {
-            try {
-                const response = await axiosInstance.get(`/search?keyword=${keyword}`);
-                setSearchResults(response.data);
-                console.log(response.data);
-            } catch (error) {
-                console.error('Error fetching search results:', error);
+            const data = await searchYouTube(keyword);
+            if (data) {
+                setSearchResults(data);
             }
         };
         fetchSearchResults();

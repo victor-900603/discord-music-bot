@@ -1,7 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import * as Icon from 'react-feather';
-import axiosInstance from "../utils/axiosInstance";
+
+import { deleteFromFavorite, deleteFavorite, getFavoriteSongs } from "../api/favorite";
+import { addToPlaylist } from "../api/playlist";
 import Modal from "../components/modal";
 
 const FavoriteSongItem = ({song}) => {
@@ -9,23 +11,14 @@ const FavoriteSongItem = ({song}) => {
     const favorite_id = params.id;
 
     const handleAddToPlaylist = async (id) => {
-        try {
-            const response = await axiosInstance.post(`/playlist?id=${id}&mode=song`);
-            console.log(response.data);
-        } catch (error) {
-            console.error('Error AddToPlaylist:', error);
-        }
+        await addToPlaylist(id, 'song');
     }
+
     const handleDeleteFavoriteSong = async (id) => {
-        try {
-            const response = await axiosInstance.delete(`/favorites/${favorite_id}/song/${id}`);
-            console.log(response.data);
-            window.location.reload();
-        } catch (error) {
-            console.error('Error deleting favorite song:', error);
-            
-        }
+        await deleteFromFavorite(favorite_id, id);
+        window.location.reload();
     }
+
     return (
         <li className="favorite-song-item">
             <div className='favorite-song-btn' onClick={handleAddToPlaylist.bind(null, song.id)} >
@@ -61,24 +54,15 @@ const FavoriteSongsList = ({songs}) => {
 
 const FavoriteController = ({id}) => {
     const [isOpen, setIsOpen] = useState(false);
-    const hadlePlayAll = async () => {
-        try {
-            const response = await axiosInstance.post(`/playlist/?id=${id}&mode=favorite`)
-        } catch (error) {
-            console.error('Error playing all songs:', error);
-        }
-    }
+
     const handleDeleteFavorite = async () => {
-        try {
-            const response = await axiosInstance.delete('/favorites/' + id);
-            window.location.href = '/';
-        } catch (error) {
-            console.error('Error delete:', error);
-        }
+        await deleteFavorite(id);
+        window.location.href = '/';
     }
+    
     return (
         <div className="favorite-controller" >
-            <div className="favorite-controller-btn play-btn" onClick={() => hadlePlayAll()}>
+            <div className="favorite-controller-btn play-btn" onClick={() => addToPlaylist(id, 'favorite')}>
                 <Icon.PlusCircle />
                 <span>播放</span>
             </div>
@@ -101,13 +85,10 @@ const FavoritePage = () => {
 
     useEffect(() => {
         const fetchSongs = async () => {
-            try {
-                const resp = await axiosInstance.get('/favorites/' + id + '/songs');
-                const result = resp.data.result;
-                setName(result.name);
-                setSongs(result.songs);
-            } catch (error) {
-                console.error('Error fetching favorite songs:', error);
+            const data = await getFavoriteSongs(id);
+            if (data) {
+                setName(data.result.name);
+                setSongs(data.result.songs);
             }
         }
         fetchSongs();

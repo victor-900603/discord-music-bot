@@ -3,8 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import * as Icon from 'react-feather';
 import '../styles/main.scss'
 import logo from '../assets/logo.svg'
-import axiosInstance from '../utils/axiosInstance';
-import PlaybackContext from '../context/PlaybackContext';
 
 
 const SearchBar = () => {
