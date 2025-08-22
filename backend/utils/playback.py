@@ -5,8 +5,8 @@ from utils.playing_list import Playlist
 
 async def play_next(bot: Bot, voice_client: VoiceClient, playlist: Playlist):
     FFMPEG_OPTIONS = {
-        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-        'options': '-vn'
+        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 -nostdin',
+        'options': '-vn -bufsize 64k -loglevel quiet'
     }
     
     song = playlist.next_song()

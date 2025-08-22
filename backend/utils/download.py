@@ -13,12 +13,14 @@ async def download_audio(url):
             'default_search': 'ytsearch',
             'extract_flat': False,
             'force_generic_extractor': False,
+            'allow_unplayable_formats': True,
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }]
         }
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             if 'entries' in info:
