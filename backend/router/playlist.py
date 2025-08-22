@@ -12,12 +12,12 @@ from utils.db import get_songs
 router = APIRouter()
 
 @router.post("/")
-async def add(request: Request, id: str, mode: str= 'song', session= Depends(check_session), playlist= Depends(get_playlist)):
-    async def download_and_add_song(id: str):
-        url = f'https://www.youtube.com/watch?v={id}'
+async def add(request: Request, id: str, mode: str='song', session=Depends(check_session), playlist=Depends(get_playlist)):
+    async def download_and_add_song(song_id: str):
+        url = f'https://www.youtube.com/watch?v={song_id}'
         song_info = await download_audio(url)
         playlist.add_song(song_info)
-        
+
     try:
         if mode == "song":
             await download_and_add_song(id)
@@ -30,58 +30,47 @@ async def add(request: Request, id: str, mode: str= 'song', session= Depends(che
         raise
     except Exception as e:
         print(f"Error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            # detail=str(e)
-        )
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "message": "Added to playlist",
-        }
-    )
+        raise HTTPException(status_code=500)
     
-@router.get("/get")
-async def get(request: Request, playlist= Depends(get_playlist)):
+    return {"message": "Added to playlist"}
+
+
+@router.get("/")
+async def get_playlist_songs(playlist=Depends(get_playlist)):
     try:
         songs, current_index = playlist.view_playlist()
-        songs = list(map(lambda song: {
-            "title": song["title"],
-            "webpage_url": song["webpage_url"],
-            "thumbnail": song["thumbnail"],
-            "channel": song["channel"],
-        }, songs))
-    except HTTPException:
-        raise
-            
+        songs = [
+            {
+                "title": s["title"],
+                "webpage_url": s["webpage_url"],
+                "thumbnail": s["thumbnail"],
+                "channel": s["channel"],
+            } for s in songs
+        ]
     except Exception as e:
         print(f"Error: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        raise HTTPException(status_code=500)
 
-    return JSONResponse(   
-        status_code=status.HTTP_200_OK,
-        content={
-            "songs": songs,
-            "current_index": current_index,
-            "loop": playlist.loop_queue,
-        }
-    )
-    
-@router.get("/remove")
-async def remove(request: Request, index: int, playlist= Depends(get_playlist)):
+    return {
+        "songs": songs,
+        "current_index": current_index,
+        "loop": playlist.loop_queue,
+    }
+
+
+@router.delete("/")
+async def remove_song(index: int, playlist=Depends(get_playlist)):
     try:
         song = playlist.remove_song(index)
+        if not song:
+            raise HTTPException(status_code=404, detail="Song not found")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        raise HTTPException(status_code=500)
 
-    return JSONResponse(   
-        status_code=status.HTTP_200_OK,
-        content={
-            "message": "Song removed from playlist",
-            "title": song["title"],
-        }
-    )
+    return {
+        "message": "Song removed from playlist",
+        "title": song["title"],
+    }
+

@@ -22,6 +22,8 @@ async def get_user_favorites( request: Request, session= Depends(check_session))
                 "result": favorites,
             }
         )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(
@@ -52,7 +54,7 @@ async def delete_user_favorite( request: Request, id: str, session= Depends(chec
         )
         
 @router.post("/")
-async def delete_user_favorite( request: Request, name: str, session= Depends(check_session)):
+async def add_user_favorite( request: Request, name: str, session= Depends(check_session)):
     try:
         inserted_id = await add_favorite(session['user_id'], name)
         return JSONResponse(
@@ -61,6 +63,8 @@ async def delete_user_favorite( request: Request, name: str, session= Depends(ch
                 "result": inserted_id,
             }
         )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(
@@ -71,6 +75,7 @@ async def delete_user_favorite( request: Request, name: str, session= Depends(ch
 # Songs
 @router.post("/{favorite_id}/song")
 async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, session= Depends(check_session)):
+    print(song)
     try:
         matched_count, modified_count = (await insert_song(session['user_id'], favorite_id, song)).values()
         if matched_count == 0:
@@ -78,7 +83,7 @@ async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, 
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Favorite not found."
             )
-        elif modified_count == 0: # song already exists
+        elif modified_count == 0: 
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Song already exists in the favorite."
@@ -97,16 +102,21 @@ async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.get("/{favorite_id}/song")
+@router.get("/{favorite_id}/songs")
 async def get_song_from_favorite( request: Request, favorite_id: str, session= Depends(check_session)):
     try:
-        songs = await get_songs(session['user_id'], favorite_id)
+        name, songs = await get_songs(session['user_id'], favorite_id)
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
-                "result": songs,
+                "result": {
+                    'name': name,
+                    'songs': songs
+                },
             }
         )
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(
