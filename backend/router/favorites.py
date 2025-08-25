@@ -19,6 +19,7 @@ async def get_user_favorites( request: Request, session= Depends(check_session))
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "message": "Favorites get successfully.",
                 "result": favorites,
             }
         )
@@ -42,6 +43,7 @@ async def delete_user_favorite( request: Request, id: str, session= Depends(chec
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "message": "Favorite deleted successfully.",
                 "result": deleted_count,
             }
         )
@@ -60,6 +62,7 @@ async def add_user_favorite( request: Request, name: str, session= Depends(check
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "message": "Favorite added successfully.",
                 "result": inserted_id,
             }
         )
@@ -91,6 +94,7 @@ async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, 
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "message": "Song added successfully.",
                 "status": 'success',
             }
         )
@@ -109,6 +113,7 @@ async def get_song_from_favorite( request: Request, favorite_id: str, session= D
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "message": "Songs get successfully.",
                 "result": {
                     'name': name,
                     'songs': songs
@@ -141,6 +146,7 @@ async def remove_song_from_favorite( request: Request, favorite_id: str, song_id
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "message": "Song removed successfully.",
                 "status": 'success',
             }
         )

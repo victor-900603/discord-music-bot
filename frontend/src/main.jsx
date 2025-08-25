@@ -5,15 +5,18 @@ import App from './App.jsx'
 
 import  { BrowserRouter as Router } from 'react-router-dom';
 import { PlaybackProvider } from './context/PlaybackContext';
+import { ToastContextProvider } from './context/ToastContext.jsx';
 
 
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
         <Router>
-            <PlaybackProvider>
-                <App />
-            </PlaybackProvider>
+            <ToastContextProvider>
+                <PlaybackProvider>
+                    <App />
+                </PlaybackProvider>
+            </ToastContextProvider>
         </Router>
-    </StrictMode>,
+    </StrictMode>
 )

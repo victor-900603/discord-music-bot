@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { toast } from './toastHelpler';
 
 const axiosInstance = axios.create({
     baseURL: 'http://localhost:8000/', 
@@ -23,6 +24,10 @@ axiosInstance.interceptors.request.use(
 export const setInterceptor = (axiosInstance, navigate) => {
     axiosInstance.interceptors.response.use(
         (response) => {
+            const { message } = response.data;
+            if (message) {
+                toast(message);
+            }
             return response;
         },
         (error) => {
@@ -40,6 +45,10 @@ export const setInterceptor = (axiosInstance, navigate) => {
                 console.error('No response received:', error.request);
             } else {
                 console.error('Error setting up the request:', error.message);
+            }
+            const message = error.message;
+            if (message) {
+                toast(message, 'error');
             }
             return Promise.reject(error); 
         }

@@ -19,9 +19,11 @@ import FavoritePage from './pages/favoritePage';
 const App = () => {
     const [expand, setExpand] = useState(false);
     const [userInfo, setUserInfo] = useState({});
-    
     const navigate = useNavigate();
-    setInterceptor(axiosInstance, navigate);
+
+    useEffect(() => {
+        setInterceptor(axiosInstance, navigate);
+    }, []);
 
     useEffect(() => {
         const fetchUser = async () => {

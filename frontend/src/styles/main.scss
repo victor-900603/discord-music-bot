@@ -408,3 +408,31 @@ footer {
         }
     }
 }
+
+
+.toast-container {
+    position: fixed;
+    bottom: 8rem;
+    right: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 1000;
+    .toast {
+        width: 15rem;
+        height: 3rem;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 0.3rem 1rem rgba(0, 0, 0, 0.2);
+        color: white;
+        text-align: center;
+        &.info {
+            background: green;
+        }
+        &.error {
+            background: crimson;
+        }
+    }
+}
