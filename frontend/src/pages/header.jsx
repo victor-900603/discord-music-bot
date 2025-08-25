@@ -13,10 +13,16 @@ const SearchBar = () => {
         setKeyword(event.target.value);
     };
 
+    const handleSearch = () => {
+        if (keyword.trim() !== '') {
+            navigate(`/search/${encodeURIComponent(keyword)}`);
+        }
+    }
+
     return (
         <div className="search-bar">
-            <input type="text" value={keyword} onChange={handleInputChange} placeholder="Search..." />
-            <Icon.Search className='search-icon' size={20} onClick={() => navigate(`/search/${keyword}`)} />
+            <input type="search" autoComplete='search' value={keyword} onChange={handleInputChange} onKeyDown={(e) => {if (e.key === 'Enter') { handleSearch() }}} placeholder="Search..." />
+            <Icon.Search className='search-icon' size={20} onClick={() => handleSearch()} />
         </div>
     );
 }
