@@ -2,12 +2,14 @@ from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi import status
 
-import asyncio
+import asyncio, logging
 
 from utils.dependencies import check_session, get_user_voice_channel, get_playlist
 from utils.playing_list import GuildPlaylistsManager, Playlist
 from utils.download import download_audio
 from utils.db import get_songs
+
+logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
 
@@ -29,7 +31,7 @@ async def add(request: Request, id: str, mode: str='song', session=Depends(check
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(status_code=500)
     
     return {"message": "Added to playlist"}
@@ -48,7 +50,7 @@ async def get_playlist_songs(playlist=Depends(get_playlist)):
             } for s in songs
         ]
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(status_code=500)
 
     return {

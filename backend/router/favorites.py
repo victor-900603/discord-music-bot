@@ -8,6 +8,8 @@ from fastapi.exceptions import HTTPException
 from utils.dependencies import check_session, get_playlist
 from utils.db import *
 from utils.models import Song
+import logging
+logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
 
@@ -26,7 +28,7 @@ async def get_user_favorites( request: Request, session= Depends(check_session))
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -50,7 +52,7 @@ async def delete_user_favorite( request: Request, id: str, session= Depends(chec
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -69,7 +71,7 @@ async def add_user_favorite( request: Request, name: str, session= Depends(check
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -78,7 +80,6 @@ async def add_user_favorite( request: Request, name: str, session= Depends(check
 # Songs
 @router.post("/{favorite_id}/song")
 async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, session= Depends(check_session)):
-    print(song)
     try:
         matched_count, modified_count = (await insert_song(session['user_id'], favorite_id, song)).values()
         if matched_count == 0:
@@ -101,7 +102,7 @@ async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, 
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -123,7 +124,7 @@ async def get_song_from_favorite( request: Request, favorite_id: str, session= D
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -153,7 +154,7 @@ async def remove_song_from_favorite( request: Request, favorite_id: str, song_id
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

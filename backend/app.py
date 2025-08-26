@@ -28,15 +28,36 @@ def setup_logging():
     # Discord 日誌
     discord_logger = logging.getLogger("discord")
     discord_logger.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter("%(asctime)s - Discord - %(levelname)s - %(message)s")
+    
     ch = logging.StreamHandler()
     ch.setFormatter(formatter)
     discord_logger.addHandler(ch)
-
+    
+    fh1 = logging.FileHandler("logs/discord.log", encoding="utf-8")
+    fh1.setFormatter(formatter)
+    discord_logger.addHandler(fh1)
+    
     # FastAPI/Uvicorn 日誌
     log_config = copy.deepcopy(LOGGING_CONFIG)
-    log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelprefix)s %(message)s"
-    log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelprefix)s %(client_addr)s - \"%(request_line)s\" %(status_code)s"
+    log_config["formatters"]["default"]["fmt"] = "%(asctime)s - FastAPI - %(levelname)s - %(message)s"
+    log_config["formatters"]["access"]["fmt"] = "%(asctime)s - FastAPI - %(levelname)s - %(client_addr)s - \"%(request_line)s\" %(status_code)s"
+    log_config["handlers"]["file"] = {
+        "formatter": "default",
+        "class": "logging.FileHandler",
+        "filename": "logs/app.log",
+        "level": "INFO",
+    }
+    log_config["loggers"]["uvicorn.access"]["handlers"].append("file")
+    log_config["loggers"]["uvicorn"]["handlers"].append("file")
+    
+    uvicorn_logger = logging.getLogger("uvicorn")
+    uvicorn_logger.setLevel(logging.INFO)
+    
+    fh2 = logging.FileHandler("logs/app.log", encoding="utf-8")
+    fh2.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    uvicorn_logger.addHandler(fh2)
+    
     return log_config
 
 # ---------------- Discord Bot ----------------
@@ -46,7 +67,8 @@ bot = commands.Bot(command_prefix="?", intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"已登入 Discord：{bot.user}")
+    discord_logger = logging.getLogger("discord")
+    discord_logger.info(f"已登入 Discord：{bot.user}")
 
 async def load_cogs():
     await bot.load_extension("cogs.general")

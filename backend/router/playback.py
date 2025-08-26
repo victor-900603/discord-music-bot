@@ -5,7 +5,7 @@ from fastapi import status
 from fastapi.websockets import WebSocketDisconnect, WebSocket, WebSocketState
 from fastapi.exceptions import HTTPException, WebSocketException
 
-import discord
+import logging
 from discord import VoiceChannel
 from discord.ext.commands import Bot
 import asyncio
@@ -13,6 +13,7 @@ from utils.playback import play_song, pause_song, resume_song, skip_song
 from utils.dependencies import check_session, get_user_voice_channel, get_playlist
 from utils.playing_list import GuildPlaylistsManager, Playlist
 
+logger = logging.getLogger("uvicorn")
 
 router = APIRouter()
 
@@ -42,7 +43,7 @@ async def playbakc_ws(websocket: WebSocket, playlist: Playlist=Depends(get_playl
     except WebSocketDisconnect  as e:
         pass
     except Exception as e:
-        print(f"WebSocket error: {str(e)}")
+        logger.error(f"WebSocket error: {str(e)}")
         await websocket.close()
     finally:
         pass
@@ -65,7 +66,7 @@ async def play(request: Request, playlist: Playlist=Depends(get_playlist)):
             }
         )
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -81,7 +82,7 @@ async def pause(request: Request, playlist: Playlist=Depends(get_playlist)):
             }
         )
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -113,7 +114,7 @@ async def skipto(request: Request, index:int, playlist: Playlist=Depends(get_pla
             }
         )
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
@@ -130,7 +131,7 @@ async def loop(request: Request, playlist: Playlist=Depends(get_playlist)):
             }
         )
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"Error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
