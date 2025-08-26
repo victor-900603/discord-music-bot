@@ -1,7 +1,9 @@
-import asyncio
+import asyncio, logging
 from discord import FFmpegOpusAudio, VoiceClient, Embed
 from discord.ext.commands import Bot
 from utils.playing_list import Playlist
+
+logger = logging.getLogger("app")
 
 async def play_next(bot: Bot, voice_client: VoiceClient, playlist: Playlist):
     FFMPEG_OPTIONS = {
@@ -24,17 +26,21 @@ async def play_next(bot: Bot, voice_client: VoiceClient, playlist: Playlist):
             await voice_client.disconnect()
         
 def play_song(bot: Bot, voice_client: VoiceClient, playlist: Playlist):
+    logger.debug(f"Attempt to play song, voice_client: {voice_client.guild}, is_playing: {voice_client.is_playing()}, is_paused: {voice_client.is_paused()}")
     if not voice_client.is_playing() and not voice_client.is_paused():
         bot.loop.create_task(play_next(bot, voice_client, playlist))
         
 def pause_song(voice_client: VoiceClient):
+    logger.debug(f"Pausing song, voice_client: {voice_client.guild}, is_playing: {voice_client.is_playing()}, is_paused: {voice_client.is_paused()}")
     if voice_client and voice_client.is_playing():
         voice_client.pause()
         
 def resume_song(voice_client: VoiceClient):
+    logger.debug(f"Resuming song, voice_client: {voice_client.guild}, is_playing: {voice_client.is_playing()}, is_paused: {voice_client.is_paused()}")
     if voice_client and voice_client.is_paused():
         voice_client.resume()
         
 def skip_song(voice_client: VoiceClient):
+    logger.debug(f"Skipping song, voice_client: {voice_client.guild}, is_playing: {voice_client.is_playing()}, is_paused: {voice_client.is_paused()}")
     if voice_client and voice_client.is_playing():
         voice_client.stop()

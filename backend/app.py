@@ -25,6 +25,14 @@ playlist_manager = GuildPlaylistsManager()
 
 # ---------------- Logging 設定 ----------------
 def setup_logging():
+    # App 日誌
+    app_logger = logging.getLogger("app")
+    app_logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s - APP - %(levelname)s - %(message)s")
+    ch0 = logging.StreamHandler()
+    ch0.setFormatter(formatter)
+    app_logger.addHandler(ch0)
+    
     # Discord 日誌
     discord_logger = logging.getLogger("discord")
     discord_logger.setLevel(logging.INFO)

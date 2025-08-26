@@ -99,12 +99,13 @@ async def skipto(request: Request, index:int, playlist: Playlist=Depends(get_pla
         
         bot: Bot = request.app.state.bot
           
-        if playlist.voice_client.is_paused():
-            resume_song(playlist.voice_client)
-        skip_song(playlist.voice_client)
-        if not playlist.voice_client.is_playing():
+        if not playlist.voice_client.is_playing() and not playlist.voice_client.is_paused():
             play_song(bot, playlist.voice_client, playlist)
-
+        elif playlist.voice_client.is_paused():
+            resume_song(playlist.voice_client)
+            skip_song(playlist.voice_client)
+        elif playlist.voice_client.is_playing():
+            skip_song(playlist.voice_client)
             
         return JSONResponse(
             status_code=status.HTTP_200_OK,
