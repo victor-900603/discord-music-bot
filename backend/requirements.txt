@@ -1,7 +1,7 @@
 dotenv
 requests
 discord
-yt_dlp
+yt_dlp>=2025.8.20
 PyNaCl
 websockets
 fastapi

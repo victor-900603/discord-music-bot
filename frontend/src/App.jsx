@@ -12,6 +12,7 @@ import HomePage from './pages/homePage';
 import SearchPage from './pages/searchPage';
 import ErrorPage from './pages/errorPage';
 import FavoritePage from './pages/favoritePage';
+import AuthPage from './pages/authPage';
 
 
 
@@ -33,7 +34,9 @@ const App = () => {
                 console.log(data);
             }
         };
-        fetchUser();
+        if (!window.location.pathname.startsWith('/auth')) {
+            fetchUser();
+        }
     }, [])
 
     return (
@@ -42,6 +45,7 @@ const App = () => {
 
             <Routes>
                 <Route path='/' element={<HomePage />}  />
+                <Route path='/auth/' element={<AuthPage />} />
                 <Route path='/search/:keyword' element={<SearchPage />}  />
                 <Route path='/error/:code' element={<ErrorPage />}  />
                 <Route path='/favorite/:id' element={<FavoritePage />}  />
@@ -54,4 +58,4 @@ const App = () => {
     )
 }
 
-export default App
+export default App;

@@ -49,7 +49,7 @@ async def playbakc_ws(websocket: WebSocket, playlist: Playlist=Depends(get_playl
         pass
     
 
-@router.get("/play")
+@router.get("/play/")
 async def play(request: Request, playlist: Playlist=Depends(get_playlist)):
     try:
         bot: Bot = request.app.state.bot
@@ -71,7 +71,7 @@ async def play(request: Request, playlist: Playlist=Depends(get_playlist)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-@router.get("/pause")
+@router.get("/pause/")
 async def pause(request: Request, playlist: Playlist=Depends(get_playlist)):
     try:
         pause_song(playlist.voice_client)
@@ -87,7 +87,7 @@ async def pause(request: Request, playlist: Playlist=Depends(get_playlist)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.get("/skipto")
+@router.get("/skipto/")
 async def skipto(request: Request, index:int, playlist: Playlist=Depends(get_playlist)):
     try:
         song = playlist.skip_to(index)
@@ -120,7 +120,7 @@ async def skipto(request: Request, index:int, playlist: Playlist=Depends(get_pla
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.get("/loop")
+@router.get("/loop/")
 async def loop(request: Request, playlist: Playlist=Depends(get_playlist)):
     try:
         playlist.loop_queue = not playlist.loop_queue

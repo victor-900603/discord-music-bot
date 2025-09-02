@@ -16,6 +16,7 @@ from cogs.views import QueueView, SearchView
 
 load_dotenv()
 MANAGER_USER_ID = int(os.getenv("MANAGER_USER_ID", 0))
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 logger = logging.getLogger("discord")
 
@@ -253,5 +254,5 @@ class MusicCog(commands.Cog):
             return
         voice_client = await self.get_voice_client(interaction)
         token = generate_token(interaction.guild_id, interaction.channel_id, interaction.user.id)
-        url = f"http://localhost:8000/auth/set/?token={token}"
+        url = f"{FRONTEND_URL}/auth/?token={token}"
         await interaction.response.send_message(url, ephemeral=True, delete_after=30)

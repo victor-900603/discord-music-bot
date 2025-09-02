@@ -7,7 +7,7 @@ import '../styles/page.scss'
 const ErrorPage = () => {
     const {code} = useParams();
     const errorMessage = {
-        403: '請重新至 Discord 使用 /web 登入',
+        401: '請重新至 Discord 使用 /web 登入',
         404: '請加入語音頻道再嘗試',
     }
     return (

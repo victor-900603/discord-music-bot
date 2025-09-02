@@ -11,3 +11,6 @@ class Favorite(BaseModel):
     user_id: int
     name: str
     songs: list[Song]
+    
+class Token(BaseModel):
+    token: str

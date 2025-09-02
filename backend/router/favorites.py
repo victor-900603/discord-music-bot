@@ -33,7 +33,7 @@ async def get_user_favorites( request: Request, session= Depends(check_session))
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.delete("/{id}")
+@router.delete("/{id}/")
 async def delete_user_favorite( request: Request, id: str, session= Depends(check_session)):
     try:
         deleted_count = await delete_favorite(session['user_id'], id)
@@ -78,7 +78,7 @@ async def add_user_favorite( request: Request, name: str, session= Depends(check
 
 
 # Songs
-@router.post("/{favorite_id}/song")
+@router.post("/{favorite_id}/song/")
 async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, session= Depends(check_session)):
     try:
         matched_count, modified_count = (await insert_song(session['user_id'], favorite_id, song)).values()
@@ -107,7 +107,7 @@ async def add_song_to_favorite( request: Request, favorite_id: str, song: Song, 
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.get("/{favorite_id}/songs")
+@router.get("/{favorite_id}/songs/")
 async def get_song_from_favorite( request: Request, favorite_id: str, session= Depends(check_session)):
     try:
         name, songs = await get_songs(session['user_id'], favorite_id)
@@ -129,7 +129,7 @@ async def get_song_from_favorite( request: Request, favorite_id: str, session= D
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
         
-@router.delete("/{favorite_id}/song/{song_id}")
+@router.delete("/{favorite_id}/song/{song_id}/")
 async def remove_song_from_favorite( request: Request, favorite_id: str, song_id: str, session= Depends(check_session)):
     try:
         matched_count, modified_count = (await remove_song(session['user_id'], favorite_id, song_id)).values()

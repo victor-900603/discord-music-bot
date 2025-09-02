@@ -19,14 +19,11 @@ async def play_next(bot: Bot, voice_client: VoiceClient, playlist: Playlist):
         embed.set_thumbnail(url=song['thumbnail'])
         await bot.get_channel(playlist.channel_id).send(embed=embed)
         
-        voice_client.play(source, after=lambda e: play_song(bot, voice_client, playlist))
-    else:
-        await asyncio.sleep(30)
-        if not voice_client.is_playing() and voice_client.is_connected():
-            await voice_client.disconnect()
+        voice_client.play(source, after=lambda e: play_song(bot, voice_client, playlist, e))
         
-def play_song(bot: Bot, voice_client: VoiceClient, playlist: Playlist):
+def play_song(bot: Bot, voice_client: VoiceClient, playlist: Playlist, e = None):
     logger.debug(f"Attempt to play song, voice_client: {voice_client.guild}, is_playing: {voice_client.is_playing()}, is_paused: {voice_client.is_paused()}")
+    if e: logger.error(e)
     if not voice_client.is_playing() and not voice_client.is_paused():
         bot.loop.create_task(play_next(bot, voice_client, playlist))
         

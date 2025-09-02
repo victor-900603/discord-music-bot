@@ -1,8 +1,8 @@
 import axiosInstance from "../utils/axiosInstance";
 
-export const auth = async () => {
+export const auth = async (token) => {
     try {
-        const resp = await axiosInstance.get('/auth/set/');
+        const resp = await axiosInstance.post('/auth/', { token});
         return resp.data;
     } catch (e) {
         console.error('Error set auth:', e);

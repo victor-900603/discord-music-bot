@@ -4,12 +4,12 @@ from fastapi.responses import JSONResponse
 from discord.ext.commands import Bot
 from utils.auth_token import decode_token
 from utils.dependencies import check_session
-
+from utils.models import Token
 router = APIRouter()
 
-@router.get("/set")
-async def auth(request: Request, token: str) -> JSONResponse:
-    user_info = decode_token(token)
+@router.post("/")
+async def auth(request: Request, token: Token) -> JSONResponse:
+    user_info = decode_token(token.token)
     if user_info is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -71,8 +71,8 @@ button {
     }
     .modal-input {
         background: $dark-bg-1;
-        border: none;
-        border-radius: 0.5rem;
+        border: 0.05rem solid rgba($color: #fff, $alpha: 0.2);
+        border-radius: 10px;
         font-size: 1.2rem;
         color: $dark-text-0;
         padding: 0.8rem;
