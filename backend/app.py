@@ -121,11 +121,22 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # ---------------- 路由 ----------------
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(search_router, prefix="/search", tags=["search"])
-app.include_router(playlist_router, prefix="/playlist", tags=["playlist"])
-app.include_router(playback_router, prefix="/playback", tags=["playback"])
-app.include_router(favorites_router, prefix="/favorites", tags=["favorites"])
+app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(search_router, prefix="/search", tags=["Search"])
+app.include_router(playlist_router, prefix="/playlist", tags=["Playlist"])
+app.include_router(playback_router, prefix="/playback", tags=["Playback"])
+app.include_router(favorites_router, prefix="/favorites", tags=["Favorites"])
+
+@app.get("/health", tags=["Health"])
+async def health_check():
+    bot_ready = bot.is_ready()
+    guild_count = len(bot.guilds) if bot_ready else 0
+    return {
+        "status": "ok",
+        "bot_ready": bot_ready,
+        "guild_count": guild_count,
+        "active_playlists": len(playlist_manager.guild_playlists),
+    }
 
 app.state.bot = bot
 app.state.playlist_manager = playlist_manager
