@@ -1,7 +1,7 @@
 from discord.ui import View, Button
 from discord import Embed, Interaction
 import discord
-from utils.download import search_yotube, download_audio
+from utils.download import search_youtube, download_audio
 from utils.playback import play_song
 from utils.playing_list import Playlist
 
@@ -84,7 +84,7 @@ class SearchView(View):
 
     @classmethod
     async def create(cls, keyword: str, playlist: Playlist):
-        results = await search_yotube(keyword)
+        results = await search_youtube(keyword)
         return cls(keyword, playlist, results)
 
     async def on_timeout(self):

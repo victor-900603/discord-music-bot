@@ -10,7 +10,7 @@ from discord.ext import commands
 
 from utils.playback import play_song, pause_song, resume_song, skip_song
 from utils.playing_list import Playlist, GuildPlaylistsManager
-from utils.download import download_audio, search_yotube
+from utils.download import download_audio, search_youtube
 from utils.auth_token import generate_token
 from cogs.views import QueueView, SearchView
 
@@ -117,7 +117,7 @@ class MusicCog(commands.Cog):
     async def play_by_keyword(self, keyword: str, interaction: Interaction, voice_client: VoiceClient, playlist: Playlist, choose: int):
         """透過關鍵字搜尋播放"""
         if not choose:
-            result = await search_yotube(keyword)
+            result = await search_youtube(keyword)
             song = result[0]
             song_url = f"https://www.youtube.com/watch?v={song['videoId']}"
             await self.play_by_url(song_url, interaction, voice_client, playlist)

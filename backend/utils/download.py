@@ -1,9 +1,19 @@
 import yt_dlp
 import asyncio
 import aiohttp
+import logging
+
+logger = logging.getLogger("app")
 
 
-async def download_audio(url):
+async def download_audio(url: str) -> dict:
+    """
+    從 YouTube URL 提取音訊資訊（不下載檔案）
+    
+    :param url: YouTube 影片網址
+    :return: 歌曲資訊字典，包含 source, title, webpage_url, thumbnail, channel, channel_url
+    :raises Exception: 當無法提取音訊資訊時
+    """
     def extract():
         ydl_opts = {
             'format': 'bestaudio/best',
@@ -23,20 +33,27 @@ async def download_audio(url):
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
+            if info is None:
+                raise Exception(f"無法提取音訊資訊: {url}")
             if 'entries' in info:
                 info = info['entries'][0]  # 針對播放清單
             return {
                 'source': info['url'],
-                'title': info['title'],
-                'webpage_url': info['webpage_url'],
-                'thumbnail': info['thumbnail'],
-                'channel': info['channel'],
-                'channel_url': info['channel_url']
+                'title': info.get('title', 'Unknown'),
+                'webpage_url': info.get('webpage_url', url),
+                'thumbnail': info.get('thumbnail', ''),
+                'channel': info.get('channel', 'Unknown'),
+                'channel_url': info.get('channel_url', '')
             }
     
-    return await asyncio.to_thread(extract)
-    
-async def search_yotube(keyword):
+    try:
+        return await asyncio.to_thread(extract)
+    except Exception as e:
+        logger.error(f"下載音訊失敗: {url}, 錯誤: {e}")
+        raise
+
+
+async def search_youtube(keyword: str) -> list[dict]:
     async def post_api(pl):
         added_payload = {'query': pl} 
 
@@ -96,12 +113,17 @@ async def search_yotube(keyword):
                 }
                 data.append(d)
 
-    data = []
-    results, next_token = await post_api(keyword)
-    parse_results(results, data)
+    try:
+        data = []
+        results, next_token = await post_api(keyword)
+        parse_results(results, data)
+        return data
+    except Exception as e:
+        logger.error(f"搜尋 YouTube 失敗: {keyword}, 錯誤: {e}")
+        raise
 
-    return data
+
 
 if __name__ == '__main__':
     print(asyncio.run(download_audio('https://www.youtube.com/watch?v=Jv3zvWZlXkk')))
-    # print(asyncio.run(search_yotube('五月天')))
+    # print(asyncio.run(search_youtube('五月天')))
