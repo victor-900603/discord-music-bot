@@ -16,7 +16,6 @@ export const pause = async () => {
     } catch (error) {
         console.error('Error pausing playback:', error);
     }
-
 }
 
 export const play = async () => {
@@ -34,5 +33,23 @@ export const toggleLoop = async () => {
         return response.data;
     } catch (error) {
         console.error('Error toggling loop:', error);
+    }
+}
+
+export const toggleShuffle = async () => {
+    try {
+        const response = await axiosInstance.get('/playback/shuffle/');
+        return response.data;
+    } catch (error) {
+        console.error('Error toggling shuffle:', error);
+    }
+}
+
+export const setVolume = async (value) => {
+    try {
+        const response = await axiosInstance.get(`/playback/volume/?value=${value}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error setting volume:', error);
     }
 }
