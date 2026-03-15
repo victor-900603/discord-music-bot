@@ -1,0 +1,50 @@
+# 正式模式
+# 用法：docker compose -f docker-compose.prod.yml up --build -d
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: discord-bot-mongo
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    # 正式環境不對外暴露 MongoDB port
+    expose:
+      - "27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: discord-bot-backend
+    restart: always
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URI=mongodb://mongo:27017
+      - API_HOST=0.0.0.0
+    ports:
+      - "8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: prod
+    container_name: discord-bot-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
