@@ -1,12 +1,12 @@
-import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import * as Icon from 'react-feather';
 
 import { deleteFromFavorite, deleteFavorite, getFavoriteSongs } from "../api/favorite";
 import { addToPlaylist } from "../api/playlist";
 import Modal from "../components/modal";
 
-const FavoriteSongItem = ({song}) => {
+const FavoriteSongItem = ({song, onDeleted}) => {
     const params = useParams();
     const favorite_id = params.id;
 
@@ -16,12 +16,12 @@ const FavoriteSongItem = ({song}) => {
 
     const handleDeleteFavoriteSong = async (id) => {
         await deleteFromFavorite(favorite_id, id);
-        window.location.reload();
+        onDeleted();
     }
 
     return (
         <li className="favorite-song-item">
-            <div className='favorite-song-btn' onClick={handleAddToPlaylist.bind(null, song.id)} >
+            <div className='favorite-song-btn' onClick={() => handleAddToPlaylist(song.id)} >
                 <div className="favorite-song-cover">
                     <img src={song.thumbnail} alt="" />
                     <div className="favorite-song-overlay">
@@ -33,31 +33,30 @@ const FavoriteSongItem = ({song}) => {
                     <p>{song.channel}</p>
                 </div>
             </div>
-            <div className="favorite-song-delete-btn" onClick={handleDeleteFavoriteSong.bind(null, song.id)}>
+            <div className="favorite-song-delete-btn" onClick={() => handleDeleteFavoriteSong(song.id)}>
                 <Icon.Trash2 />
             </div>
         </li>
     )
 }
 
-const FavoriteSongsList = ({songs}) => {
+const FavoriteSongsList = ({songs, onDeleted}) => {
     return (
         <ul className="favorite-songs-list">
-            {songs.map((song, index) => {
-                return (
-                    <FavoriteSongItem song={song} />
-                )
-            })}
+            {songs.map((song) => (
+                <FavoriteSongItem key={song.id} song={song} onDeleted={onDeleted} />
+            ))}
         </ul>
     )
 }
 
 const FavoriteController = ({id}) => {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
 
     const handleDeleteFavorite = async () => {
         await deleteFavorite(id);
-        window.location.href = '/';
+        navigate('/');
     }
     
     return (
@@ -83,25 +82,25 @@ const FavoritePage = () => {
     const [name, setName] = useState("");
     const [songs, setSongs] = useState([]);
 
-    useEffect(() => {
-        const fetchSongs = async () => {
-            const data = await getFavoriteSongs(id);
-            if (data) {
-                setName(data.result.name);
-                setSongs(data.result.songs);
-            }
+    const fetchSongs = useCallback(async () => {
+        const data = await getFavoriteSongs(id);
+        if (data) {
+            setName(data.result.name);
+            setSongs(data.result.songs);
         }
+    }, [id]);
+
+    useEffect(() => {
         fetchSongs();
-    }, []);
+    }, [fetchSongs]);
 
     return (
         <div className="page favorite-page">
             <div className="favorite-page-header">
                 <h1>{name}</h1>
                 <FavoriteController id={id} />
-
             </div>
-            <FavoriteSongsList songs={songs} />
+            <FavoriteSongsList songs={songs} onDeleted={fetchSongs} />
         </div>
     )
 }
