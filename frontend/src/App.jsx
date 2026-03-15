@@ -1,6 +1,6 @@
-import { useState, useEffect, createContext } from 'react'
-import  { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
-import axiosInstance, {setInterceptor} from './utils/axiosInstance';
+import { useState, useEffect } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import axiosInstance, { setInterceptor } from './utils/axiosInstance';
 import { getAuth } from './api/auth';
 import './App.css'
 import './styles/style.scss'
@@ -24,20 +24,19 @@ const App = () => {
 
     useEffect(() => {
         setInterceptor(axiosInstance, navigate);
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         const fetchUser = async () => {
             const data = await getAuth();
             if (data) {
                 setUserInfo(data);
-                console.log(data);
             }
         };
         if (!window.location.pathname.startsWith('/auth')) {
             fetchUser();
         }
-    }, [])
+    }, []);
 
     return (
         <>
