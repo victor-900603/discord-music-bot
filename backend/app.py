@@ -5,7 +5,8 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException, status
+from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.cors import CORSMiddleware
 import uvicorn
@@ -20,11 +21,16 @@ from router import auth_router, search_router, playlist_router, playback_router,
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 SESSION_SECRET = os.getenv("SESSION_SECRET", "default_secret")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+API_HOST = os.getenv("API_HOST", "127.0.0.1")
+API_PORT = int(os.getenv("API_PORT", "8000"))
 
 playlist_manager = GuildPlaylistsManager()
 
 # ---------------- Logging 設定 ----------------
 def setup_logging():
+    os.makedirs("logs", exist_ok=True)
+
     # App 日誌
     app_logger = logging.getLogger("app")
     app_logger.setLevel(logging.DEBUG)
@@ -83,14 +89,38 @@ async def load_cogs():
     await bot.add_cog(MusicCog(bot, playlist_manager))
 
 # ---------------- FastAPI ----------------
-app = FastAPI()
+app = FastAPI(
+    title="Discord Music Bot API",
+    description="Discord 音樂機器人的 Web API，提供播放控制、收藏管理等功能",
+    version="1.0.0",
+)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
+    allow_headers=["*"],
 )
+
+# ---------------- 全域錯誤處理 ----------------
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger = logging.getLogger("uvicorn")
+    logger.error(f"Unhandled error: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal server error"},
+    )
+
+# ---------------- 路由 ----------------
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(search_router, prefix="/search", tags=["search"])
 app.include_router(playlist_router, prefix="/playlist", tags=["playlist"])
@@ -107,7 +137,7 @@ async def main():
     bot_task = asyncio.create_task(bot.start(DISCORD_TOKEN))
 
     log_config = setup_logging()
-    api_config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_config=log_config)
+    api_config = uvicorn.Config(app, host=API_HOST, port=API_PORT, log_config=log_config)
     api_server = uvicorn.Server(api_config)
     api_task = asyncio.create_task(api_server.serve())
 
