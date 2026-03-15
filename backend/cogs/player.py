@@ -212,6 +212,16 @@ class MusicCog(commands.Cog):
 
         await interaction.response.send_message(f'🔁 循環播放: {loop}')
 
+    @app_commands.command(name = "shuffle", description = "隨機播放")
+    async def shuffle(self, interaction: Interaction):
+        if not await self.check_user_voice(interaction):
+            return
+
+        playlist = self.playlist_manager.get_playlist(interaction.guild_id, interaction.channel_id)
+        new_state = playlist.toggle_shuffle()
+        emoji = '🔀' if new_state else '➡️'
+        await interaction.response.send_message(f'{emoji} 隨機播放: {new_state}')
+
     @app_commands.command(name = "info", description = "當前曲目")
     async def info(self, interaction: Interaction):
         if not await self.check_user_voice(interaction):
