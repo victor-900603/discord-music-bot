@@ -1,6 +1,7 @@
 # app.py
 import os
 import asyncio
+import signal
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -152,7 +153,26 @@ async def main():
     api_server = uvicorn.Server(api_config)
     api_task = asyncio.create_task(api_server.serve())
 
-    await asyncio.gather(bot_task, api_task)
+    # 標準關閉處理，確保在接收到 SIGINT/SIGTERM 時能優雅關閉
+    loop = asyncio.get_event_loop()
+    shutdown_event = asyncio.Event()
+    
+    def _signal_handler():
+        shutdown_event.set()
+    
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        try:
+            loop.add_signal_handler(sig, _signal_handler)
+        except NotImplementedError:
+            pass  # Windows 不支援 add_signal_handler
+
+    try:
+        await asyncio.gather(bot_task, api_task)
+    except asyncio.CancelledError:
+        pass
+    finally:
+        if bot.is_ready():
+            await bot.close()
 
 if __name__ == "__main__":
     try:
