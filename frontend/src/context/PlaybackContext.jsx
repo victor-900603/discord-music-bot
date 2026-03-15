@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const WS_URL = `ws://${window.location.hostname}:8000/playback/`;
+const WS_URL = import.meta.env.VITE_WS_URL;
 const RECONNECT_DELAY_MS = 3000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 const DEFAULT_SONG = {
